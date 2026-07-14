@@ -8,21 +8,44 @@ empresas y usuarios, y guarda cada cierre subido.
 ## Stack
 
 - Next.js (App Router) + TypeScript + Tailwind CSS
-- Prisma + SQLite
+- Prisma + PostgreSQL
 - Autenticación propia (email/contraseña, sesión por cookie firmada con `jose`)
 - Parseo de Excel/CSV con `xlsx` (SheetJS)
 
-## Primeros pasos
+## Desplegar en Vercel (sin usar la terminal)
+
+1. Entra a [vercel.com](https://vercel.com) y crea una cuenta gratis iniciando
+   sesión con tu cuenta de GitHub (la misma dueña de este repositorio).
+2. Click en **Add New → Project** e importa este repositorio
+   (`flortorrealba/contabilidad`), seleccionando la rama
+   `claude/accounting-pl-statement-f66uo9`.
+3. Antes de desplegar, ve a la pestaña **Storage** del proyecto y crea una
+   base de datos **Postgres** gratuita (Neon/Vercel Postgres). Al conectarla
+   al proyecto, Vercel agrega automáticamente la variable `DATABASE_URL`.
+   - Si no aparece esa opción durante la importación, primero completa el
+     despliegue (puede fallar la primera vez), luego crea la base de datos
+     desde **Storage → Create Database → Postgres**, conéctala al proyecto, y
+     finalmente usa el botón **Redeploy**.
+4. En **Settings → Environment Variables**, agrega una variable llamada
+   `AUTH_SECRET` con cualquier texto largo y aleatorio (por ejemplo, generado
+   en [randomkeygen.com](https://randomkeygen.com)).
+5. Click en **Deploy**. Cuando termine, Vercel te da una URL
+   (`https://tu-proyecto.vercel.app`) — esa es tu app, ya lista para usar
+   desde cualquier navegador, sin instalar nada.
+
+## Correrla en tu computador (alternativa con terminal)
 
 ```bash
 npm install
-cp .env.example .env   # y reemplaza AUTH_SECRET por un valor aleatorio propio
+cp .env.example .env   # reemplaza DATABASE_URL por tu Postgres y AUTH_SECRET por un valor aleatorio
 npx prisma migrate deploy
 npm run dev
 ```
 
 Abre [http://localhost:3000](http://localhost:3000), crea una cuenta, crea una
 empresa y sube el libro diario (columnas mínimas: Fecha, Cuenta, Debe, Haber).
+Necesitas una base de datos PostgreSQL accesible (local o gratuita en
+[neon.tech](https://neon.tech), por ejemplo).
 
 ## Cómo funciona
 
