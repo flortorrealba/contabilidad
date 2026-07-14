@@ -1,10 +1,11 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { obtenerBalanceComprobacion, obtenerEstadoResultados } from "@/lib/reportes";
+import { obtenerBalanceComprobacion, obtenerEstadoResultados, obtenerEstadoSituacionFinanciera } from "@/lib/reportes";
 import { formatearFecha } from "@/lib/format";
 import { ReportTabs } from "@/components/cierres/ReportTabs";
 import { BalanceTable } from "@/components/cierres/BalanceTable";
 import { EstadoResultadosTable } from "@/components/cierres/EstadoResultadosTable";
+import { EstadoSituacionFinancieraTable } from "@/components/cierres/EstadoSituacionFinancieraTable";
 import { DeleteCierreButton } from "@/components/cierres/DeleteCierreButton";
 
 export default async function CierreDetallePage({
@@ -17,9 +18,10 @@ export default async function CierreDetallePage({
   const cierre = await prisma.cierre.findUnique({ where: { id: cierreId } });
   if (!cierre || cierre.empresaId !== empresaId) notFound();
 
-  const [balance, estadoResultados] = await Promise.all([
+  const [balance, estadoResultados, eff] = await Promise.all([
     obtenerBalanceComprobacion(cierreId),
     obtenerEstadoResultados(cierreId),
+    obtenerEstadoSituacionFinanciera(cierreId),
   ]);
 
   return (
@@ -51,6 +53,7 @@ export default async function CierreDetallePage({
 
       <ReportTabs
         resultados={<EstadoResultadosTable estado={estadoResultados} />}
+        eff={<EstadoSituacionFinancieraTable eff={eff} />}
         balance={<BalanceTable balance={balance} />}
       />
     </div>

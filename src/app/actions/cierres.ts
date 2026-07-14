@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireUser, requireEmpresaAccess } from "@/lib/auth";
 import { parseLibroDiario } from "@/lib/libro-diario-parser";
-import { sugerirSeccionPL } from "@/lib/clasificacion-default";
+import { sugerirCategoria } from "@/lib/clasificacion-default";
 import type { ActionState } from "./auth";
 
 const TOLERANCIA = 1;
@@ -52,7 +52,7 @@ export async function uploadCierreAction(
           empresaId,
           nombre,
           codigo: codigoPorNombre.get(nombre) ?? null,
-          seccionPL: sugerirSeccionPL(nombre),
+          categoria: sugerirCategoria(nombre),
         })),
       });
       const creadas = await prisma.cuenta.findMany({ where: { empresaId, nombre: { in: nombresNuevos } } });

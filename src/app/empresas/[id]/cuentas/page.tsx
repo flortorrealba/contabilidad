@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { CuentaSeccionSelect } from "@/components/cuentas/CuentaSeccionSelect";
+import { CuentaCategoriaSelect } from "@/components/cuentas/CuentaCategoriaSelect";
 
 export default async function CuentasPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: empresaId } = await params;
@@ -9,14 +9,14 @@ export default async function CuentasPage({ params }: { params: Promise<{ id: st
     orderBy: [{ nombre: "asc" }],
   });
 
-  const sinClasificar = cuentas.filter((c) => c.seccionPL === "NONE" && !esCuentaDeBalanceProbable(c.nombre));
+  const sinClasificar = cuentas.filter((c) => c.categoria === "SIN_CLASIFICAR");
 
   return (
     <div className="space-y-6">
       <p className="text-sm text-neutral-600">
-        Clasifica cada cuenta para que el Estado de Resultados la agrupe correctamente. Las cuentas de
-        balance (activos, pasivos, patrimonio) deben quedar como &quot;Cuenta de balance&quot;: no se
-        muestran en el Estado de Resultados.
+        Clasifica cada cuenta para que el Estado de Resultados y el Estado de Situación Financiera
+        (Balance) la agrupen correctamente. Las cuentas &quot;Sin clasificar&quot; no aparecen en
+        ninguno de los dos reportes.
       </p>
 
       {cuentas.length === 0 ? (
@@ -30,7 +30,7 @@ export default async function CuentasPage({ params }: { params: Promise<{ id: st
               <tr>
                 <th className="px-4 py-2">Código</th>
                 <th className="px-4 py-2">Cuenta</th>
-                <th className="px-4 py-2">Sección en Estado de Resultados</th>
+                <th className="px-4 py-2">Categoría</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-100">
@@ -39,7 +39,7 @@ export default async function CuentasPage({ params }: { params: Promise<{ id: st
                   <td className="px-4 py-2 text-neutral-500">{cuenta.codigo ?? "—"}</td>
                   <td className="px-4 py-2 font-medium text-neutral-900">{cuenta.nombre}</td>
                   <td className="px-4 py-2">
-                    <CuentaSeccionSelect empresaId={empresaId} cuentaId={cuenta.id} seccionPL={cuenta.seccionPL} />
+                    <CuentaCategoriaSelect empresaId={empresaId} cuentaId={cuenta.id} categoria={cuenta.categoria} />
                   </td>
                 </tr>
               ))}
@@ -50,17 +50,10 @@ export default async function CuentasPage({ params }: { params: Promise<{ id: st
 
       {sinClasificar.length > 0 && (
         <p className="text-xs text-amber-600">
-          {sinClasificar.length} cuenta(s) quedaron marcadas como &quot;Cuenta de balance&quot; por defecto
-          porque no se reconoció su nombre. Revisa si alguna corresponde a ingresos o gastos.
+          {sinClasificar.length} cuenta(s) quedaron &quot;Sin clasificar&quot; porque no se reconoció su
+          nombre. Clasifícalas para que aparezcan en el Estado de Resultados o el Balance.
         </p>
       )}
     </div>
   );
-}
-
-// Heurística simple solo para la advertencia en pantalla, no afecta el cálculo del reporte.
-function esCuentaDeBalanceProbable(nombre: string) {
-  const palabrasBalance = ["CAJA", "BANCO", "CLIENTE", "PROVEEDOR", "IVA", "CAPITAL", "PATRIMONIO", "ACTIVO", "PASIVO", "ANTICIPO", "GARANTIA", "REMUNERACION", "IMPOSICION", "IMPUESTO POR PAGAR", "PRESTAMO", "CREDITO FISCAL"];
-  const upper = nombre.toUpperCase();
-  return palabrasBalance.some((p) => upper.includes(p));
 }

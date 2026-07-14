@@ -1,5 +1,12 @@
 import { Document, Page, Text, View, StyleSheet, renderToBuffer } from "@react-pdf/renderer";
-import type { BalanceComprobacion, EstadoResultados, SeccionResultados } from "@/lib/reportes";
+import type {
+  BalanceComprobacion,
+  CategoriaEFF,
+  EstadoResultados,
+  EstadoSituacionFinanciera,
+  GrupoEFF,
+  SeccionResultados,
+} from "@/lib/reportes";
 import { formatearMonto, NOMBRES_MESES } from "@/lib/format";
 
 const styles = StyleSheet.create({
@@ -150,15 +157,79 @@ function BalanceComprobacionPdf({ balance }: { balance: BalanceComprobacion }) {
   );
 }
 
+function FilaCategoriaEFF({ categoria }: { categoria: CategoriaEFF }) {
+  return (
+    <View key={categoria.categoria}>
+      <View style={[styles.row, { backgroundColor: "#f3f3f3" }]}>
+        <Text style={[styles.cellLabel, styles.bold, { width: 280 }]}>{categoria.label}</Text>
+        <Text style={[styles.cellNum, styles.bold]}>{formatearMonto(categoria.total)}</Text>
+      </View>
+      {categoria.lineas.map((linea) => (
+        <View style={styles.row} key={linea.cuentaId}>
+          <Text style={[styles.cellLabel, { width: 280, paddingLeft: 10 }]}>{linea.nombre}</Text>
+          <Text style={styles.cellNum}>{formatearMonto(linea.monto)}</Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+function GrupoEFFView({ grupo }: { grupo: GrupoEFF }) {
+  if (grupo.categorias.length === 0) return null;
+  return (
+    <View>
+      <View style={[styles.totalRow, { backgroundColor: "#e5e5e5" }]}>
+        <Text style={[styles.cellLabel, styles.bold, { width: 280 }]}>{grupo.label}</Text>
+        <Text style={[styles.cellNum, styles.bold]}>{formatearMonto(grupo.total)}</Text>
+      </View>
+      {grupo.categorias.map((c) => (
+        <FilaCategoriaEFF key={c.categoria} categoria={c} />
+      ))}
+    </View>
+  );
+}
+
+function EstadoSituacionFinancieraPdf({ eff }: { eff: EstadoSituacionFinanciera }) {
+  return (
+    <Page size="A4" style={styles.page}>
+      <Text style={styles.seccionTitulo}>Estado de Situación Financiera Clasificado</Text>
+      <Text style={{ marginBottom: 8, color: eff.cuadra ? "#15803d" : "#b91c1c" }}>
+        {eff.cuadra
+          ? "El balance cuadra: Total Activos = Total Patrimonio y Pasivos."
+          : `El balance NO cuadra. Diferencia de ${formatearMonto(Math.abs(eff.diferencia))}.`}
+      </Text>
+
+      <Text style={[styles.bold, { fontSize: 10, marginTop: 8, marginBottom: 4 }]}>ACTIVOS</Text>
+      <GrupoEFFView grupo={eff.activoCorriente} />
+      <GrupoEFFView grupo={eff.activoNoCorriente} />
+      <View style={[styles.totalRow, { borderTopWidth: 1.5 }]}>
+        <Text style={[styles.cellLabel, styles.bold, { width: 280 }]}>TOTAL ACTIVOS</Text>
+        <Text style={[styles.cellNum, styles.bold]}>{formatearMonto(eff.totalActivos)}</Text>
+      </View>
+
+      <Text style={[styles.bold, { fontSize: 10, marginTop: 14, marginBottom: 4 }]}>PATRIMONIO Y PASIVOS</Text>
+      <GrupoEFFView grupo={eff.pasivoCorriente} />
+      <GrupoEFFView grupo={eff.pasivoNoCorriente} />
+      <GrupoEFFView grupo={eff.patrimonio} />
+      <View style={[styles.totalRow, { borderTopWidth: 1.5 }]}>
+        <Text style={[styles.cellLabel, styles.bold, { width: 280 }]}>TOTAL PATRIMONIO Y PASIVOS</Text>
+        <Text style={[styles.cellNum, styles.bold]}>{formatearMonto(eff.totalPatrimonioYPasivos)}</Text>
+      </View>
+    </Page>
+  );
+}
+
 export async function generarPdfCierre(
   nombreEmpresa: string,
   nombreCierre: string,
   balance: BalanceComprobacion,
-  estado: EstadoResultados
+  estado: EstadoResultados,
+  eff: EstadoSituacionFinanciera
 ): Promise<Buffer> {
   const documento = (
     <Document>
       <EstadoResultadosPdf estado={estado} nombreEmpresa={nombreEmpresa} nombreCierre={nombreCierre} />
+      <EstadoSituacionFinancieraPdf eff={eff} />
       <BalanceComprobacionPdf balance={balance} />
     </Document>
   );

@@ -1,5 +1,5 @@
 import * as XLSX from "xlsx";
-import type { BalanceComprobacion, EstadoResultados } from "@/lib/reportes";
+import type { BalanceComprobacion, EstadoResultados, EstadoSituacionFinanciera, GrupoEFF } from "@/lib/reportes";
 import { NOMBRES_MESES } from "@/lib/format";
 
 function hojaBalance(balance: BalanceComprobacion): (string | number)[][] {
@@ -51,15 +51,47 @@ function hojaEstadoResultados(estado: EstadoResultados): (string | number)[][] {
   return filas;
 }
 
+function hojaEFF(eff: EstadoSituacionFinanciera): (string | number)[][] {
+  const filas: (string | number)[][] = [["Estado de Situación Financiera Clasificado", "Monto"]];
+
+  const agregarGrupo = (grupo: GrupoEFF) => {
+    if (grupo.categorias.length === 0) return;
+    filas.push([grupo.label, grupo.total]);
+    for (const categoria of grupo.categorias) {
+      filas.push([`  ${categoria.label}`, categoria.total]);
+      for (const linea of categoria.lineas) {
+        filas.push([`    ${linea.nombre}`, linea.monto]);
+      }
+    }
+  };
+
+  filas.push(["ACTIVOS", ""]);
+  agregarGrupo(eff.activoCorriente);
+  agregarGrupo(eff.activoNoCorriente);
+  filas.push(["TOTAL ACTIVOS", eff.totalActivos]);
+  filas.push(["", ""]);
+  filas.push(["PATRIMONIO Y PASIVOS", ""]);
+  agregarGrupo(eff.pasivoCorriente);
+  agregarGrupo(eff.pasivoNoCorriente);
+  agregarGrupo(eff.patrimonio);
+  filas.push(["TOTAL PATRIMONIO Y PASIVOS", eff.totalPatrimonioYPasivos]);
+
+  return filas;
+}
+
 export function generarExcelCierre(
   nombreCierre: string,
   balance: BalanceComprobacion,
-  estado: EstadoResultados
+  estado: EstadoResultados,
+  eff: EstadoSituacionFinanciera
 ): Buffer {
   const workbook = XLSX.utils.book_new();
 
   const hojaER = XLSX.utils.aoa_to_sheet(hojaEstadoResultados(estado));
   XLSX.utils.book_append_sheet(workbook, hojaER, "Estado de Resultados");
+
+  const hojaEFFSheet = XLSX.utils.aoa_to_sheet(hojaEFF(eff));
+  XLSX.utils.book_append_sheet(workbook, hojaEFFSheet, "Estado Situacion Financiera");
 
   const hojaBC = XLSX.utils.aoa_to_sheet(hojaBalance(balance));
   XLSX.utils.book_append_sheet(workbook, hojaBC, "Balance de Comprobacion");

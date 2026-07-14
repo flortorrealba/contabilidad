@@ -40,14 +40,15 @@ model EmpresaMember {
   @@unique([userId, empresaId])
 }
 
-// seccionPL: "NONE" (cuenta de balance, no aparece en el Estado de Resultados) | "INGRESOS" |
-// "COSTO_VENTAS" | "GASTOS_ADMIN_VENTAS" | "COSTOS_FINANCIEROS" | "OTRAS_GANANCIAS_PERDIDAS" | "IMPUESTO_GANANCIAS"
+// categoria: "SIN_CLASIFICAR" | categorías de balance (ver src/lib/clasificacion.ts) |
+// "INGRESOS" | "COSTO_VENTAS" | "GASTOS_ADMIN_VENTAS" | "COSTOS_FINANCIEROS" |
+// "OTRAS_GANANCIAS_PERDIDAS" | "IMPUESTO_GANANCIAS"
 model Cuenta {
   id        String    @id @default(cuid())
   empresaId String
   codigo    String?
   nombre    String
-  seccionPL String    @default("NONE")
+  categoria String    @default("SIN_CLASIFICAR")
   createdAt DateTime  @default(now())
   empresa   Empresa   @relation(fields: [empresaId], references: [id], onDelete: Cascade)
   asientos  Asiento[]

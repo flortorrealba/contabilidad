@@ -3,18 +3,18 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireUser, requireEmpresaAccess } from "@/lib/auth";
-import { isSeccionPL } from "@/lib/pl-secciones";
+import { isCategoria } from "@/lib/clasificacion";
 
-export async function updateCuentaSeccionAction(formData: FormData) {
+export async function updateCuentaCategoriaAction(formData: FormData) {
   const user = await requireUser();
   const empresaId = String(formData.get("empresaId"));
   const cuentaId = String(formData.get("cuentaId"));
-  const seccionPL = String(formData.get("seccionPL"));
+  const categoria = String(formData.get("categoria"));
 
   await requireEmpresaAccess(user.id, empresaId);
 
-  if (!isSeccionPL(seccionPL)) {
-    throw new Error("Sección de P&L inválida");
+  if (!isCategoria(categoria)) {
+    throw new Error("Categoría inválida");
   }
 
   const cuenta = await prisma.cuenta.findUnique({ where: { id: cuentaId } });
@@ -22,6 +22,6 @@ export async function updateCuentaSeccionAction(formData: FormData) {
     throw new Error("Cuenta no encontrada");
   }
 
-  await prisma.cuenta.update({ where: { id: cuentaId }, data: { seccionPL } });
+  await prisma.cuenta.update({ where: { id: cuentaId }, data: { categoria } });
   revalidatePath(`/empresas/${empresaId}/cuentas`);
 }

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireUser, requireEmpresaAccess, AuthError } from "@/lib/auth";
-import { obtenerBalanceComprobacion, obtenerEstadoResultados } from "@/lib/reportes";
+import { obtenerBalanceComprobacion, obtenerEstadoResultados, obtenerEstadoSituacionFinanciera } from "@/lib/reportes";
 import { generarPdfCierre } from "@/lib/export/pdf";
 import { nombreArchivo } from "@/lib/export/excel";
 
@@ -25,12 +25,13 @@ export async function GET(
   const cierre = await prisma.cierre.findUnique({ where: { id: cierreId }, include: { empresa: true } });
   if (!cierre || cierre.empresaId !== empresaId) notFound();
 
-  const [balance, estado] = await Promise.all([
+  const [balance, estado, eff] = await Promise.all([
     obtenerBalanceComprobacion(cierreId),
     obtenerEstadoResultados(cierreId),
+    obtenerEstadoSituacionFinanciera(cierreId),
   ]);
 
-  const buffer = await generarPdfCierre(cierre.empresa.nombre, cierre.nombre, balance, estado);
+  const buffer = await generarPdfCierre(cierre.empresa.nombre, cierre.nombre, balance, estado, eff);
 
   return new NextResponse(new Uint8Array(buffer), {
     headers: {

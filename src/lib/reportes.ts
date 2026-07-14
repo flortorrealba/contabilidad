@@ -1,11 +1,20 @@
 import { prisma } from "./prisma";
-import { SECCIONES_PL, SECCION_PL_LABEL, type SeccionPL } from "./pl-secciones";
+import {
+  CATEGORIAS_BALANCE,
+  CATEGORIAS_RESULTADO,
+  CATEGORIA_META,
+  GRUPO_LABEL,
+  esGrupoActivo,
+  type Categoria,
+  type Grupo,
+  type SeccionPL,
+} from "./clasificacion";
 
 export interface FilaBalance {
   cuentaId: string;
   codigo: string | null;
   nombre: string;
-  seccionPL: string;
+  categoria: string;
   debe: number;
   haber: number;
   saldoDeudor: number;
@@ -44,7 +53,7 @@ export async function obtenerBalanceComprobacion(cierreId: string): Promise<Bala
       cuentaId: g.cuentaId,
       codigo: cuenta.codigo,
       nombre: cuenta.nombre,
-      seccionPL: cuenta.seccionPL,
+      categoria: cuenta.categoria,
       debe,
       haber,
       saldoDeudor: diferencia > 0 ? diferencia : 0,
@@ -105,7 +114,7 @@ function sumarVectores(a: number[], b: number[]) {
 export async function obtenerEstadoResultados(cierreId: string): Promise<EstadoResultados> {
   const agrupado = await prisma.asiento.groupBy({
     by: ["cuentaId", "mes"],
-    where: { cierreId, cuenta: { seccionPL: { not: "NONE" } } },
+    where: { cierreId, cuenta: { categoria: { in: [...CATEGORIAS_RESULTADO] } } },
     _sum: { debe: true, haber: true },
   });
 
@@ -132,10 +141,10 @@ export async function obtenerEstadoResultados(cierreId: string): Promise<EstadoR
   }
 
   const seccionesMap = new Map<SeccionPL, SeccionResultados>();
-  for (const seccion of SECCIONES_PL) {
+  for (const seccion of CATEGORIAS_RESULTADO) {
     seccionesMap.set(seccion, {
       seccion,
-      label: SECCION_PL_LABEL[seccion],
+      label: CATEGORIA_META[seccion].label,
       lineas: [],
       montosPorMes: meses.map(() => 0),
       total: 0,
@@ -144,7 +153,7 @@ export async function obtenerEstadoResultados(cierreId: string): Promise<EstadoR
 
   for (const g of agrupado) {
     const cuenta = mapaCuentas.get(g.cuentaId)!;
-    const seccion = seccionesMap.get(cuenta.seccionPL as SeccionPL);
+    const seccion = seccionesMap.get(cuenta.categoria as SeccionPL);
     if (!seccion) continue;
     const linea = lineasPorCuenta.get(g.cuentaId)!;
     if (!seccion.lineas.some((l) => l.cuentaId === linea.cuentaId)) {
@@ -160,7 +169,7 @@ export async function obtenerEstadoResultados(cierreId: string): Promise<EstadoR
     }
   }
 
-  const secciones = SECCIONES_PL.map((s) => seccionesMap.get(s)!);
+  const secciones = CATEGORIAS_RESULTADO.map((s) => seccionesMap.get(s)!);
 
   const ingresos = seccionesMap.get("INGRESOS")!;
   const costoVentas = seccionesMap.get("COSTO_VENTAS")!;
@@ -194,4 +203,111 @@ export async function obtenerEstadoResultados(cierreId: string): Promise<EstadoR
   };
 
   return { meses, secciones, margenBruto, ebitda, resultadoAntesImpuestos };
+}
+
+export interface LineaEFF {
+  cuentaId: string;
+  nombre: string;
+  monto: number;
+}
+
+export interface CategoriaEFF {
+  categoria: string;
+  label: string;
+  lineas: LineaEFF[];
+  total: number;
+}
+
+export interface GrupoEFF {
+  grupo: Grupo;
+  label: string;
+  categorias: CategoriaEFF[];
+  total: number;
+}
+
+export interface EstadoSituacionFinanciera {
+  activoCorriente: GrupoEFF;
+  activoNoCorriente: GrupoEFF;
+  totalActivos: number;
+  pasivoCorriente: GrupoEFF;
+  pasivoNoCorriente: GrupoEFF;
+  patrimonio: GrupoEFF;
+  totalPatrimonioYPasivos: number;
+  diferencia: number;
+  cuadra: boolean;
+}
+
+export async function obtenerEstadoSituacionFinanciera(cierreId: string): Promise<EstadoSituacionFinanciera> {
+  const [agrupado, estadoResultados] = await Promise.all([
+    prisma.asiento.groupBy({
+      by: ["cuentaId"],
+      where: { cierreId, cuenta: { categoria: { in: [...CATEGORIAS_BALANCE] } } },
+      _sum: { debe: true, haber: true },
+    }),
+    obtenerEstadoResultados(cierreId),
+  ]);
+
+  const cuentas = await prisma.cuenta.findMany({ where: { id: { in: agrupado.map((g) => g.cuentaId) } } });
+  const mapaCuentas = new Map(cuentas.map((c) => [c.id, c]));
+
+  const categoriasMap = new Map<Categoria, CategoriaEFF>();
+  for (const categoria of CATEGORIAS_BALANCE) {
+    categoriasMap.set(categoria, { categoria, label: CATEGORIA_META[categoria].label, lineas: [], total: 0 });
+  }
+
+  for (const g of agrupado) {
+    const cuenta = mapaCuentas.get(g.cuentaId)!;
+    const categoria = cuenta.categoria as Categoria;
+    const meta = CATEGORIA_META[categoria];
+    if (!meta || meta.grupo === "RESULTADO") continue;
+    const debe = g._sum.debe ?? 0;
+    const haber = g._sum.haber ?? 0;
+    const monto = esGrupoActivo(meta.grupo) ? debe - haber : haber - debe;
+    const cat = categoriasMap.get(categoria)!;
+    cat.lineas.push({ cuentaId: g.cuentaId, nombre: cuenta.nombre, monto });
+    cat.total += monto;
+  }
+
+  for (const cat of categoriasMap.values()) {
+    cat.lineas.sort((a, b) => b.monto - a.monto || a.nombre.localeCompare(b.nombre));
+  }
+
+  function construirGrupo(grupo: Grupo, categoriasExtra: CategoriaEFF[] = []): GrupoEFF {
+    const categorias = CATEGORIAS_BALANCE.filter((c) => CATEGORIA_META[c].grupo === grupo)
+      .map((c) => categoriasMap.get(c)!)
+      .filter((c) => c.lineas.length > 0)
+      .concat(categoriasExtra);
+    const total = categorias.reduce((s, c) => s + c.total, 0);
+    return { grupo, label: GRUPO_LABEL[grupo], categorias, total };
+  }
+
+  const activoCorriente = construirGrupo("ACTIVO_CORRIENTE");
+  const activoNoCorriente = construirGrupo("ACTIVO_NO_CORRIENTE");
+  const totalActivos = activoCorriente.total + activoNoCorriente.total;
+
+  const pasivoCorriente = construirGrupo("PASIVO_CORRIENTE");
+  const pasivoNoCorriente = construirGrupo("PASIVO_NO_CORRIENTE");
+
+  const resultadoEjercicio: CategoriaEFF = {
+    categoria: "RESULTADO_EJERCICIO",
+    label: "Resultado del ejercicio",
+    lineas: [],
+    total: estadoResultados.resultadoAntesImpuestos.total,
+  };
+  const patrimonio = construirGrupo("PATRIMONIO", [resultadoEjercicio]);
+  const totalPatrimonioYPasivos = pasivoCorriente.total + pasivoNoCorriente.total + patrimonio.total;
+
+  const diferencia = totalActivos - totalPatrimonioYPasivos;
+
+  return {
+    activoCorriente,
+    activoNoCorriente,
+    totalActivos,
+    pasivoCorriente,
+    pasivoNoCorriente,
+    patrimonio,
+    totalPatrimonioYPasivos,
+    diferencia,
+    cuadra: Math.abs(diferencia) < TOLERANCIA,
+  };
 }
