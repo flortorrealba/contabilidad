@@ -32,7 +32,21 @@ export default async function CierreDetallePage({
             {cierre.archivoOrigen ? ` · ${cierre.archivoOrigen}` : ""}
           </p>
         </div>
-        <DeleteCierreButton empresaId={empresaId} cierreId={cierreId} />
+        <div className="flex items-center gap-4">
+          <a
+            href={`/empresas/${empresaId}/cierres/${cierreId}/export/excel`}
+            className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm font-medium text-neutral-700 hover:bg-neutral-100"
+          >
+            Descargar Excel
+          </a>
+          <a
+            href={`/empresas/${empresaId}/cierres/${cierreId}/export/pdf`}
+            className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm font-medium text-neutral-700 hover:bg-neutral-100"
+          >
+            Descargar PDF
+          </a>
+          <DeleteCierreButton empresaId={empresaId} cierreId={cierreId} />
+        </div>
       </div>
 
       <ReportTabs
