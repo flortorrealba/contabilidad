@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String          @id @default(cuid())
+  email          String          @unique
+  passwordHash   String
+  nombre         String
+  createdAt      DateTime        @default(now())
+  memberships    EmpresaMember[]
+  cierresCreados Cierre[]        @relation("CierreCreadoPor")
+}
+
+model Empresa {
+  id        String          @id @default(cuid())
+  nombre    String
+  rut       String?
+  createdAt DateTime        @default(now())
+  members   EmpresaMember[]
+  cuentas   Cuenta[]
+  cierres   Cierre[]
+}
+
+// Rol: "ADMIN" | "MIEMBRO"
+model EmpresaMember {
+  id        String   @id @default(cuid())
+  userId    String
+  empresaId String
+  rol       String   @default("ADMIN")
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  empresa   Empresa  @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, empresaId])
+}
+
+// seccionPL: "NONE" (cuenta de balance, no aparece en el Estado de Resultados) | "INGRESOS" |
+// "COSTO_VENTAS" | "GASTOS_ADMIN_VENTAS" | "COSTOS_FINANCIEROS" | "OTRAS_GANANCIAS_PERDIDAS" | "IMPUESTO_GANANCIAS"
+model Cuenta {
+  id        String    @id @default(cuid())
+  empresaId String
+  codigo    String?
+  nombre    String
+  seccionPL String    @default("NONE")
+  createdAt DateTime  @default(now())
+  empresa   Empresa   @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  asientos  Asiento[]
+
+  @@unique([empresaId, nombre])
+}
+
+// estado: "BORRADOR" | "CERRADO"
+model Cierre {
+  id            String   @id @default(cuid())
+  empresaId     String
+  nombre        String
+  fechaDesde    DateTime
+  fechaHasta    DateTime
+  archivoOrigen String?
+  estado        String   @default("BORRADOR")
+  cuadra        Boolean  @default(false)
+  totalDebe     Float    @default(0)
+  totalHaber    Float    @default(0)
+  createdAt     DateTime @default(now())
+  creadoPorId   String?
+  empresa       Empresa  @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  creadoPor     User?    @relation("CierreCreadoPor", fields: [creadoPorId], references: [id])
+  asientos      Asiento[]
+}
+
+model Asiento {
+  id            String   @id @default(cuid())
+  cierreId      String
+  cuentaId      String
+  fecha         DateTime
+  mes           Int
+  tipo          String?
+  numeroVoucher String?
+  numeroDocto   String?
+  glosa         String?
+  debe          Float    @default(0)
+  haber         Float    @default(0)
+  cierre        Cierre   @relation(fields: [cierreId], references: [id], onDelete: Cascade)
+  cuenta        Cuenta   @relation(fields: [cuentaId], references: [id])
+
+  @@index([cierreId])
+  @@index([cuentaId])
+}
