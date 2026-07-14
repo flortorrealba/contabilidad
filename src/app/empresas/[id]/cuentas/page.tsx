@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { CuentaCategoriaSelect } from "@/components/cuentas/CuentaCategoriaSelect";
+import { ReclasificarButton } from "@/components/cuentas/ReclasificarButton";
 
 export default async function CuentasPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: empresaId } = await params;
@@ -18,6 +19,8 @@ export default async function CuentasPage({ params }: { params: Promise<{ id: st
         (Balance) la agrupen correctamente. Las cuentas &quot;Sin clasificar&quot; no aparecen en
         ninguno de los dos reportes.
       </p>
+
+      {sinClasificar.length > 0 && <ReclasificarButton empresaId={empresaId} />}
 
       {cuentas.length === 0 ? (
         <p className="text-sm text-neutral-500">
