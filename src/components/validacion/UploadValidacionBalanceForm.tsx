@@ -14,7 +14,7 @@ export function UploadValidacionBalanceForm({ empresaId, cierreId }: { empresaId
       <div>
         <h3 className="text-sm font-semibold text-neutral-900">Balance / Mayor de iContador</h3>
         <p className="mt-1 text-sm text-neutral-500">
-          Sube el archivo de Balance General que exporta iContador (hoja &quot;Balance&quot;) para que la
+          Sube el archivo de Balance General (o Balance de 8 Columnas) que exporta iContador para que la
           aplicación compare, cuenta por cuenta, sus Débitos y Créditos contra lo calculado desde el libro
           diario y te muestre las diferencias.
         </p>

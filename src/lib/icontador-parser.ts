@@ -31,6 +31,23 @@ function leerFilas(buffer: Buffer, hojaPreferida: string): string[][] {
   return XLSX.utils.sheet_to_json<string[]>(hoja, { header: 1, raw: false, defval: "" });
 }
 
+function normalizarEncabezado(valor: unknown): string {
+  return String(valor ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[°º.]/g, "")
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, " ");
+}
+
+// iContador exporta el Balance con distintos nombres de hoja y encabezados según el
+// reporte ("Balance General de 8 Columnas" trae "Cod. Cuenta"/"Nom. Cuenta"; otras
+// exportaciones traen "Cuenta"/"Nombre"), pero en ambos casos las columnas de Débitos
+// y Créditos quedan en la 3ª y 4ª posición.
+const ENCABEZADOS_CODIGO = new Set(["CUENTA", "COD CUENTA", "CODIGO CUENTA"]);
+const ENCABEZADOS_NOMBRE = new Set(["NOMBRE", "NOM CUENTA", "NOMBRE CUENTA"]);
+
 export interface FilaBalanceExterno {
   codigo: string;
   nombre: string;
@@ -38,43 +55,49 @@ export interface FilaBalanceExterno {
   creditos: number;
 }
 
-// Parsea la hoja "Balance" del Libro Mayor/Balance General de iContador: una fila
-// por cuenta con sus totales de Débitos y Créditos del período.
+// Parsea el Balance General / Libro Mayor que exporta iContador: una fila por cuenta
+// con sus totales de Débitos y Créditos del período. Revisa todas las hojas del
+// archivo porque el nombre de la hoja varía según el reporte.
 export function parsearBalanceExterno(buffer: Buffer): FilaBalanceExterno[] {
-  const filas = leerFilas(buffer, "Balance");
+  const workbook = XLSX.read(buffer, { type: "buffer" });
 
-  let filaEncabezado = -1;
-  for (let i = 0; i < filas.length; i++) {
-    if (String(filas[i][0]).trim() === "Cuenta" && String(filas[i][1]).trim() === "Nombre") {
-      filaEncabezado = i;
-      break;
-    }
-  }
-  if (filaEncabezado === -1) {
-    throw new Error(
-      'No se encontró la tabla de cuentas (fila con encabezados "Cuenta" y "Nombre"). ¿Es el archivo de Balance de iContador?'
-    );
-  }
-
-  const resultado: FilaBalanceExterno[] = [];
-  for (let i = filaEncabezado + 1; i < filas.length; i++) {
-    const fila = filas[i];
-    const codigo = String(fila[0] ?? "").trim();
-    const nombre = String(fila[1] ?? "").trim();
-    if (!codigo || !nombre) continue;
-    resultado.push({
-      codigo,
-      nombre,
-      debitos: limpiarNumero(fila[2]),
-      creditos: limpiarNumero(fila[3]),
+  for (const nombreHoja of workbook.SheetNames) {
+    const filas = XLSX.utils.sheet_to_json<string[]>(workbook.Sheets[nombreHoja], {
+      header: 1,
+      raw: false,
+      defval: "",
     });
+
+    let filaEncabezado = -1;
+    for (let i = 0; i < filas.length; i++) {
+      const c0 = normalizarEncabezado(filas[i][0]);
+      const c1 = normalizarEncabezado(filas[i][1]);
+      if (ENCABEZADOS_CODIGO.has(c0) && ENCABEZADOS_NOMBRE.has(c1)) {
+        filaEncabezado = i;
+        break;
+      }
+    }
+    if (filaEncabezado === -1) continue;
+
+    const resultado: FilaBalanceExterno[] = [];
+    for (let i = filaEncabezado + 1; i < filas.length; i++) {
+      const fila = filas[i];
+      const codigo = String(fila[0] ?? "").trim();
+      const nombre = String(fila[1] ?? "").trim();
+      if (!codigo || !nombre) continue;
+      resultado.push({
+        codigo,
+        nombre,
+        debitos: limpiarNumero(fila[2]),
+        creditos: limpiarNumero(fila[3]),
+      });
+    }
+    if (resultado.length > 0) return resultado;
   }
 
-  if (resultado.length === 0) {
-    throw new Error("No se encontraron cuentas en el archivo de Balance.");
-  }
-
-  return resultado;
+  throw new Error(
+    'No se encontró la tabla de cuentas en el archivo (se esperaban encabezados "Cuenta"/"Nombre" o "Cod. Cuenta"/"Nom. Cuenta"). ¿Es el Balance General que exporta iContador?'
+  );
 }
 
 export interface FacturaPendienteExterna {
