@@ -1,0 +1,1000 @@
+<title>Lourdes Espiritualidad — Mockup Home</title>
+<style>
+  :root{
+    --ivory:#F8F4EA;
+    --white:#FFFFFF;
+    --carbon:#2B2B2B;
+    --gold:#D4AF37;
+    --gold-dark:#B88A1C;
+    --midnight:#0B1C34;
+    --taupe:#9C8B72;
+    --linen:#EFE8D8;
+    --espresso:#3B2A1E;
+    --hairline: rgba(43,43,43,0.12);
+    --serif: Georgia, 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', 'Times New Roman', serif;
+    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    --measure: 62ch;
+  }
+
+  *{box-sizing:border-box;}
+  html{background:var(--ivory);}
+  body{
+    margin:0;
+    background:var(--ivory);
+    color:var(--carbon);
+    font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  img,svg{display:block;max-width:100%;}
+  a{color:inherit;text-decoration:none;}
+  button{font-family:inherit;}
+  h1,h2,h3,p{margin:0;}
+  h1,h2,h3{text-wrap:balance;}
+  :focus-visible{outline:2px solid var(--gold-dark);outline-offset:3px;}
+
+  .eyebrow{
+    font-family:var(--sans);
+    font-size:0.72rem;
+    font-weight:600;
+    letter-spacing:0.22em;
+    text-transform:uppercase;
+    color:var(--gold-dark);
+  }
+  .eyebrow--on-photo{color:var(--gold);}
+
+  .section-head{
+    max-width:640px;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    margin:0 auto 56px;
+    text-align:center;
+  }
+  .section-head h2{
+    font-family:var(--serif);
+    font-size:2.4rem;
+    font-weight:500;
+    letter-spacing:0.01em;
+  }
+  .section-head p{
+    font-family:var(--serif);
+    font-style:italic;
+    color:var(--taupe);
+    font-size:1.05rem;
+  }
+
+  .wrap{max-width:1280px;margin:0 auto;padding:0 48px;}
+
+  /* grain overlay for simulated photography, kept consistent site-wide */
+  .photo{
+    position:relative;
+    isolation:isolate;
+    overflow:hidden;
+  }
+  .photo::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    mix-blend-mode:overlay;
+    opacity:0.18;
+    pointer-events:none;
+  }
+  .photo::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    box-shadow: inset 0 0 90px rgba(0,0,0,0.28);
+    pointer-events:none;
+    z-index:2;
+  }
+
+  /* ---------- Header ---------- */
+  header.site{
+    position:sticky;
+    top:0;
+    z-index:50;
+    background:rgba(248,244,234,0.92);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--hairline);
+  }
+  .header-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    height:88px;
+  }
+  .logo{
+    display:flex;
+    flex-direction:column;
+    line-height:1;
+    gap:2px;
+  }
+  .logo .name{
+    font-family:var(--serif);
+    font-style:italic;
+    font-size:1.7rem;
+  }
+  .logo .sub{
+    font-size:0.6rem;
+    letter-spacing:0.32em;
+    color:var(--taupe);
+    font-weight:600;
+  }
+  nav.main{
+    display:flex;
+    gap:40px;
+  }
+  nav.main a{
+    font-size:0.78rem;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    font-weight:600;
+    color:var(--carbon);
+    position:relative;
+    padding-bottom:4px;
+  }
+  nav.main a::after{
+    content:"";
+    position:absolute;
+    left:0;right:0;bottom:0;
+    height:1px;
+    background:var(--gold-dark);
+    transform:scaleX(0);
+    transform-origin:left;
+    transition:transform .25s ease;
+  }
+  nav.main a:hover::after{transform:scaleX(1);}
+  nav.main a:hover{color:var(--gold-dark);}
+  .header-icons{
+    display:flex;
+    align-items:center;
+    gap:22px;
+  }
+  .header-icons button{
+    background:none;border:none;cursor:pointer;color:var(--carbon);
+    display:flex;align-items:center;justify-content:center;
+    padding:4px;
+    transition:color .2s ease;
+  }
+  .header-icons button:hover{color:var(--gold-dark);}
+  .bag-wrap{position:relative;}
+  .bag-count{
+    position:absolute;top:-6px;right:-8px;
+    background:var(--gold);
+    color:var(--carbon);
+    font-size:0.6rem;
+    font-weight:700;
+    width:16px;height:16px;
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+  }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    height:92vh;
+    min-height:640px;
+    display:flex;
+    align-items:flex-end;
+    background:
+      radial-gradient(ellipse 900px 700px at 78% 30%, rgba(212,175,55,0.20), transparent 60%),
+      linear-gradient(120deg,#efe3c8 0%, #e6d3ab 32%, #cdb387 58%, #a9865a 78%, #7c5c3d 100%);
+  }
+  .hero-inner{
+    position:relative;
+    z-index:3;
+    width:100%;
+    padding:0 48px 96px;
+    max-width:1280px;
+    margin:0 auto;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    gap:40px;
+  }
+  .hero-copy{max-width:560px;display:flex;flex-direction:column;gap:22px;}
+  .hero-copy h1{
+    font-family:var(--serif);
+    font-style:italic;
+    font-weight:500;
+    font-size:4.4rem;
+    line-height:1.02;
+    color:#fbf7ee;
+    text-shadow:0 2px 24px rgba(11,28,52,0.35);
+  }
+  .hero-copy p{
+    font-family:var(--serif);
+    font-size:1.1rem;
+    color:#f3ead8;
+    max-width:44ch;
+  }
+  .btn-gold{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    background:var(--gold);
+    color:var(--carbon);
+    border:none;
+    padding:16px 30px;
+    font-size:0.76rem;
+    font-weight:700;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    cursor:pointer;
+    transition:background .2s ease, transform .2s ease;
+    width:fit-content;
+  }
+  .btn-gold:hover{background:var(--gold-dark);color:#fff;transform:translateY(-1px);}
+  .btn-outline{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    background:transparent;
+    color:var(--gold);
+    border:1px solid var(--gold);
+    padding:15px 29px;
+    font-size:0.76rem;
+    font-weight:700;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    cursor:pointer;
+    transition:all .2s ease;
+    width:fit-content;
+  }
+  .btn-outline:hover{background:var(--gold);color:var(--midnight);}
+
+  .hero-piece{
+    flex-shrink:0;
+    width:280px;
+    opacity:0.95;
+  }
+  .scroll-cue{
+    position:absolute;
+    left:50%;
+    bottom:28px;
+    transform:translateX(-50%);
+    z-index:3;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:8px;
+    color:#f3ead8;
+  }
+  .scroll-cue span{font-size:0.62rem;letter-spacing:0.24em;text-transform:uppercase;}
+
+  /* ---------- Generic sections ---------- */
+  section{padding:120px 0;}
+  section.tight{padding:100px 0;}
+
+  /* ---------- Categorias ---------- */
+  .cat-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:24px;
+  }
+  .cat-card{
+    height:400px;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-end;
+    padding:28px;
+    color:#fbf7ee;
+    cursor:pointer;
+  }
+  .cat-card .cat-icon{width:56px;margin-bottom:auto;opacity:0.9;}
+  .cat-card h3{
+    font-family:var(--serif);
+    font-style:italic;
+    font-size:1.5rem;
+    margin-bottom:6px;
+  }
+  .cat-card p{font-size:0.82rem;color:#f3ead8;opacity:0.85;}
+  .cat-card .cat-link{
+    margin-top:14px;
+    font-size:0.68rem;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    font-weight:700;
+    color:var(--gold);
+    display:flex;
+    align-items:center;
+    gap:6px;
+    transition:gap .2s ease, color .2s ease;
+  }
+  .cat-card:hover .cat-link{gap:10px;color:#fff;}
+
+  .cat-1{background:linear-gradient(160deg,#e9dcc0,#c7a877 60%,#8a6b45);}
+  .cat-2{background:linear-gradient(160deg,#f0d9c8,#d9a875 55%,#9c6b3f);}
+  .cat-3{background:linear-gradient(160deg,#e3d3ae,#b9946a 55%,#6f4f30);}
+  .cat-4{background:linear-gradient(160deg,#d8c39c,#a67f4e 55%,#5c3f24);}
+
+  /* ---------- Productos ---------- */
+  .prod-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:32px 28px;
+  }
+  .prod-card{
+    background:var(--white);
+    display:flex;
+    flex-direction:column;
+  }
+  .prod-media{
+    aspect-ratio:1/1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    background:radial-gradient(circle at 50% 42%, #fffdf7, var(--linen) 78%);
+  }
+  .prod-media svg{width:52%;}
+  .tag-new{
+    position:absolute;
+    top:14px;left:14px;
+    background:var(--gold);
+    color:var(--carbon);
+    font-size:0.6rem;
+    font-weight:700;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    padding:5px 9px;
+  }
+  .prod-info{padding:18px 4px 0;display:flex;flex-direction:column;gap:4px;}
+  .prod-info h3{font-family:var(--serif);font-size:1.05rem;font-weight:500;}
+  .prod-info .material{font-size:0.78rem;color:var(--taupe);}
+  .prod-info .price{
+    margin-top:6px;
+    font-size:0.92rem;
+    font-weight:700;
+    letter-spacing:0.02em;
+  }
+  .prod-card:hover .prod-media{background:radial-gradient(circle at 50% 42%, #fffdf7, #e6dcc4 78%);}
+
+  .see-all{display:flex;justify-content:center;margin-top:56px;}
+
+  /* ---------- Campaña regalos ---------- */
+  .gift{
+    background:
+      radial-gradient(ellipse 700px 500px at 22% 60%, rgba(212,175,55,0.16), transparent 65%),
+      linear-gradient(115deg,#0B1C34 0%, #122943 45%, #0B1C34 75%, #06121f 100%);
+    padding:140px 0;
+    color:#f3ead8;
+  }
+  .gift-inner{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:60px;
+  }
+  .gift-copy{max-width:480px;display:flex;flex-direction:column;gap:20px;}
+  .gift-copy h2{
+    font-family:var(--serif);
+    font-style:italic;
+    font-size:2.9rem;
+    color:#fbf7ee;
+  }
+  .gift-copy p{font-family:var(--serif);font-size:1.05rem;color:#d9cdb3;max-width:42ch;}
+  .gift-icon{width:260px;flex-shrink:0;}
+
+  /* ---------- Historia ---------- */
+  .historia-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:72px;
+    align-items:center;
+  }
+  .historia-photo{
+    height:520px;
+    background:linear-gradient(150deg,#e7d7b8,#c9a877 45%,#8a6438 80%,#4d3520);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .historia-photo svg{width:34%;opacity:0.92;}
+  .historia-copy{display:flex;flex-direction:column;gap:22px;max-width:var(--measure);}
+  .historia-copy h2{font-family:var(--serif);font-size:2.3rem;}
+  .historia-copy p{
+    font-family:var(--serif);
+    font-size:1.05rem;
+    line-height:1.75;
+    color:#4a4238;
+  }
+  .historia-copy p::first-letter{
+    font-size:2.6rem;
+    font-style:italic;
+    color:var(--gold-dark);
+    float:left;
+    line-height:0.8;
+    margin:6px 8px 0 0;
+  }
+  .historia-stat{
+    display:flex;
+    gap:36px;
+    margin-top:8px;
+    padding-top:24px;
+    border-top:1px solid var(--hairline);
+  }
+  .historia-stat div strong{
+    display:block;
+    font-family:var(--serif);
+    font-size:1.6rem;
+    color:var(--gold-dark);
+  }
+  .historia-stat div span{font-size:0.72rem;letter-spacing:0.06em;color:var(--taupe);}
+
+  /* ---------- Testimonios ---------- */
+  .test-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:32px;
+  }
+  .test-card{
+    background:var(--white);
+    padding:40px 32px;
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+  }
+  .test-card .quote-mark{
+    font-family:var(--serif);
+    font-size:3rem;
+    color:var(--gold);
+    line-height:0.5;
+    font-style:italic;
+  }
+  .test-card p{font-family:var(--serif);font-size:1.02rem;line-height:1.6;color:var(--carbon);}
+  .test-stars{display:flex;gap:3px;}
+  .test-who{display:flex;flex-direction:column;gap:2px;margin-top:auto;padding-top:6px;}
+  .test-who strong{font-size:0.86rem;}
+  .test-who span{font-size:0.76rem;color:var(--taupe);}
+
+  /* ---------- Instagram ---------- */
+  .insta-head{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin-bottom:36px;
+  }
+  .insta-head h2{font-family:var(--serif);font-size:1.9rem;}
+  .insta-head a{
+    font-size:0.74rem;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    font-weight:700;
+    color:var(--gold-dark);
+    display:flex;align-items:center;gap:8px;
+  }
+  .insta-grid{
+    display:grid;
+    grid-template-columns:repeat(6,1fr);
+    gap:16px;
+  }
+  .insta-tile{
+    aspect-ratio:1/1;
+    position:relative;
+    cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .insta-tile svg{width:38%;opacity:0.85;}
+  .insta-tile .hover-icon{
+    position:absolute;inset:0;
+    display:flex;align-items:center;justify-content:center;
+    background:rgba(11,28,52,0.0);
+    transition:background .2s ease;
+    z-index:3;
+  }
+  .insta-tile:hover .hover-icon{background:rgba(11,28,52,0.35);}
+  .insta-tile .hover-icon svg{width:24px;height:24px;opacity:0;transition:opacity .2s ease;}
+  .insta-tile:hover .hover-icon svg{opacity:1;}
+  .insta-1{background:linear-gradient(160deg,#eee0c2,#c9a066 70%,#7c5330);}
+  .insta-2{background:linear-gradient(150deg,#122943,#0B1C34 70%,#050c17);}
+  .insta-3{background:linear-gradient(160deg,#e6d2ab,#b98a54 70%,#6b431f);}
+  .insta-4{background:linear-gradient(150deg,#f0e3c9,#d2ac78 70%,#875c33);}
+  .insta-5{background:linear-gradient(150deg,#16304d,#0B1C34 70%,#050c17);}
+  .insta-6{background:linear-gradient(160deg,#e9d9b8,#c19a63 70%,#7a5330);}
+
+  /* ---------- Footer ---------- */
+  footer{
+    background:var(--linen);
+    border-top:1px solid var(--hairline);
+    padding:88px 0 0;
+  }
+  .footer-grid{
+    display:grid;
+    grid-template-columns:1.4fr 1fr 1fr 1.3fr;
+    gap:48px;
+    padding-bottom:64px;
+  }
+  .footer-brand{display:flex;flex-direction:column;gap:16px;max-width:320px;}
+  .footer-brand .name{font-family:var(--serif);font-style:italic;font-size:1.6rem;}
+  .footer-brand p{font-size:0.86rem;line-height:1.6;color:#5a5348;}
+  .footer-social{display:flex;gap:16px;margin-top:6px;}
+  .footer-social a{
+    width:34px;height:34px;border:1px solid var(--hairline);
+    display:flex;align-items:center;justify-content:center;
+    color:var(--carbon);transition:all .2s ease;
+  }
+  .footer-social a:hover{border-color:var(--gold-dark);color:var(--gold-dark);}
+  .footer-col h4{
+    font-size:0.72rem;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--taupe);
+    margin-bottom:18px;
+    font-weight:700;
+  }
+  .footer-col ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px;}
+  .footer-col a{font-size:0.88rem;}
+  .footer-col a:hover{color:var(--gold-dark);}
+  .newsletter p{font-size:0.86rem;color:#5a5348;margin-bottom:16px;line-height:1.5;}
+  .newsletter form{display:flex;border-bottom:1px solid var(--carbon);padding-bottom:10px;}
+  .newsletter input{
+    flex:1;border:none;background:none;font-family:var(--sans);font-size:0.88rem;color:var(--carbon);outline:none;
+  }
+  .newsletter input::placeholder{color:var(--taupe);}
+  .newsletter button{
+    background:none;border:none;color:var(--gold-dark);font-weight:700;
+    font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;
+  }
+  .newsletter button:hover{color:var(--carbon);}
+  .footer-bottom{
+    border-top:1px solid var(--hairline);
+    padding:26px 0;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .footer-bottom p{font-size:0.76rem;color:var(--taupe);}
+  .payment-row{display:flex;gap:8px;}
+  .payment-row span{
+    border:1px solid var(--hairline);
+    font-size:0.62rem;
+    font-weight:700;
+    letter-spacing:0.04em;
+    padding:5px 9px;
+    color:var(--taupe);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important;}
+  }
+</style>
+
+<header class="site">
+  <div class="wrap header-row">
+    <a class="logo" href="#" aria-label="Lourdes Espiritualidad, inicio">
+      <span class="name">Lourdes</span>
+      <span class="sub">ESPIRITUALIDAD</span>
+    </a>
+    <nav class="main" aria-label="Principal">
+      <a href="#categorias">Colecciones</a>
+      <a href="#destacados">Novedades</a>
+      <a href="#regalos">Regalos</a>
+      <a href="#historia">Nuestra Historia</a>
+      <a href="#contacto">Contacto</a>
+    </nav>
+    <div class="header-icons">
+      <button aria-label="Buscar">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7.2"/><line x1="21" y1="21" x2="16.2" y2="16.2"/></svg>
+      </button>
+      <button aria-label="Mi cuenta">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.6-4.2 5-6 8-6s6.4 1.8 8 6"/></svg>
+      </button>
+      <button class="bag-wrap" aria-label="Bolsa, 2 productos">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 8h12l-1 13H7L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
+        <span class="bag-count">2</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<section class="hero photo">
+  <div class="hero-inner">
+    <div class="hero-copy">
+      <span class="eyebrow eyebrow--on-photo">Colección permanente</span>
+      <h1>Fe que se lleva puesta</h1>
+      <p>Piezas en plata y oro laminado, trabajadas a mano, pensadas para acompañar cada día tu camino de fe.</p>
+      <button class="btn-gold">Descubrir la colección
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+    </div>
+    <svg class="hero-piece" viewBox="0 0 200 260" fill="none" stroke="#fbf7ee" stroke-width="1.3">
+      <path d="M100 10 C130 40, 150 90, 120 130 C160 140, 175 175, 150 205" opacity="0.55"/>
+      <circle cx="100" cy="42" r="7"/>
+      <circle cx="115" cy="63" r="5.5"/>
+      <circle cx="122" cy="90" r="5.5"/>
+      <circle cx="118" cy="118" r="5.5"/>
+      <path d="M100 150 v70" stroke-width="1.6"/>
+      <path d="M78 172 h44" stroke-width="1.6"/>
+      <path d="M100 150 v-8" stroke-width="1.6"/>
+      <circle cx="100" cy="235" r="10" fill="#D4AF37" stroke="none" opacity="0.85"/>
+    </svg>
+  </div>
+  <div class="scroll-cue">
+    <span>Desplaza</span>
+    <svg width="14" height="20" viewBox="0 0 14 20" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="1" y="1" width="12" height="18" rx="6"/><line x1="7" y1="6" x2="7" y2="10"/></svg>
+  </div>
+</section>
+
+<section id="categorias">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Explora</span>
+      <h2>Explora por categoría</h2>
+      <p>Cada pieza, un gesto de devoción.</p>
+    </div>
+    <div class="cat-grid">
+      <a class="cat-card cat-1 photo" href="#">
+        <svg class="cat-icon" viewBox="0 0 60 60" fill="none" stroke="#fbf7ee" stroke-width="1.3">
+          <circle cx="30" cy="12" r="4"/><circle cx="41" cy="18" r="4"/><circle cx="45" cy="30" r="4"/>
+          <circle cx="41" cy="42" r="4"/><circle cx="30" cy="48" r="4"/><circle cx="19" cy="42" r="4"/>
+          <circle cx="15" cy="30" r="4"/><circle cx="19" cy="18" r="4"/>
+          <path d="M30 48 v9 M26 57 h8" stroke-width="1.6"/>
+        </svg>
+        <h3>Rosarios</h3>
+        <p>Cuentas talladas, madera de olivo y plata.</p>
+        <span class="cat-link">Ver rosarios
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </span>
+      </a>
+      <a class="cat-card cat-2 photo" href="#">
+        <svg class="cat-icon" viewBox="0 0 60 60" fill="none" stroke="#fbf7ee" stroke-width="1.3">
+          <circle cx="30" cy="26" r="16"/>
+          <path d="M30 16 v20 M21 26 h18" stroke-width="1.6"/>
+          <path d="M18 44 q12 10 24 0" />
+        </svg>
+        <h3>Medallas &amp; Dijes</h3>
+        <p>Advocaciones grabadas en oro laminado.</p>
+        <span class="cat-link">Ver medallas
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </span>
+      </a>
+      <a class="cat-card cat-3 photo" href="#">
+        <svg class="cat-icon" viewBox="0 0 60 60" fill="none" stroke="#fbf7ee" stroke-width="1.3">
+          <path d="M6 30 a24 10 0 1 0 48 0 a24 10 0 1 0 -48 0" />
+          <circle cx="30" cy="20" r="3.5" fill="#fbf7ee" stroke="none"/>
+          <circle cx="14" cy="30" r="3.5" fill="#fbf7ee" stroke="none"/>
+          <circle cx="46" cy="30" r="3.5" fill="#fbf7ee" stroke="none"/>
+        </svg>
+        <h3>Pulseras</h3>
+        <p>Cadenas finas con dijes de significado.</p>
+        <span class="cat-link">Ver pulseras
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </span>
+      </a>
+      <a class="cat-card cat-4 photo" href="#">
+        <svg class="cat-icon" viewBox="0 0 60 60" fill="none" stroke="#fbf7ee" stroke-width="1.3">
+          <path d="M12 10 q18 20 36 0" />
+          <path d="M30 10 v18" stroke-width="1.6"/>
+          <path d="M22 28 l8 10 8 -10 z" />
+        </svg>
+        <h3>Collares</h3>
+        <p>Piezas delicadas para el día a día.</p>
+        <span class="cat-link">Ver collares
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section id="destacados" style="background:var(--white);">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Novedades</span>
+      <h2>Piezas destacadas</h2>
+      <p>Seleccionadas por su significado y su factura.</p>
+    </div>
+    <div class="prod-grid">
+
+      <article class="prod-card">
+        <div class="prod-media">
+          <span class="tag-new">Nuevo</span>
+          <svg viewBox="0 0 100 100" fill="none" stroke="#B88A1C" stroke-width="1.2">
+            <circle cx="50" cy="20" r="4.5"/><circle cx="63" cy="27" r="4"/><circle cx="68" cy="42" r="4"/>
+            <circle cx="63" cy="57" r="4"/><circle cx="50" cy="64" r="4"/><circle cx="37" cy="57" r="4"/>
+            <circle cx="32" cy="42" r="4"/><circle cx="37" cy="27" r="4"/>
+            <path d="M50 64 v18 M45 82 h10"/>
+          </svg>
+        </div>
+        <div class="prod-info">
+          <h3>Rosario Regina</h3>
+          <span class="material">Plata 925 y ónix</span>
+          <span class="price">$128.000</span>
+        </div>
+      </article>
+
+      <article class="prod-card">
+        <div class="prod-media">
+          <svg viewBox="0 0 100 100" fill="none" stroke="#B88A1C" stroke-width="1.2">
+            <circle cx="50" cy="42" r="24"/>
+            <path d="M50 26 v32 M36 42 h28"/>
+            <path d="M30 68 q20 16 40 0"/>
+          </svg>
+        </div>
+        <div class="prod-info">
+          <h3>Medalla Virgen del Carmen</h3>
+          <span class="material">Oro laminado 18k</span>
+          <span class="price">$96.000</span>
+        </div>
+      </article>
+
+      <article class="prod-card">
+        <div class="prod-media">
+          <svg viewBox="0 0 100 100" fill="none" stroke="#B88A1C" stroke-width="1.2">
+            <path d="M14 50 a36 15 0 1 0 72 0 a36 15 0 1 0 -72 0"/>
+            <circle cx="50" cy="34" r="4.5" fill="#B88A1C" stroke="none"/>
+            <circle cx="26" cy="50" r="4.5" fill="#B88A1C" stroke="none"/>
+            <circle cx="74" cy="50" r="4.5" fill="#B88A1C" stroke="none"/>
+          </svg>
+        </div>
+        <div class="prod-info">
+          <h3>Pulsera Fe</h3>
+          <span class="material">Plata 925 y perla cultivada</span>
+          <span class="price">$74.000</span>
+        </div>
+      </article>
+
+      <article class="prod-card">
+        <div class="prod-media">
+          <span class="tag-new">Nuevo</span>
+          <svg viewBox="0 0 100 100" fill="none" stroke="#B88A1C" stroke-width="1.2">
+            <path d="M20 18 q30 30 60 0"/>
+            <path d="M50 18 v30" stroke-width="1.5"/>
+            <path d="M38 48 l12 16 12 -16 z"/>
+          </svg>
+        </div>
+        <div class="prod-info">
+          <h3>Cruz Serenidad</h3>
+          <span class="material">Oro laminado 18k</span>
+          <span class="price">$112.000</span>
+        </div>
+      </article>
+
+      <article class="prod-card">
+        <div class="prod-media">
+          <svg viewBox="0 0 100 100" fill="none" stroke="#B88A1C" stroke-width="1.2">
+            <path d="M22 20 q28 26 56 0"/>
+            <path d="M50 20 v22" stroke-width="1.5"/>
+            <path d="M50 46 c-14 0 -20 12 -20 20 c0 10 9 16 20 16 c11 0 20 -6 20 -16 c0 -8 -6 -20 -20 -20 Z"/>
+          </svg>
+        </div>
+        <div class="prod-info">
+          <h3>Dije Corazón Sagrado</h3>
+          <span class="material">Plata 925</span>
+          <span class="price">$68.000</span>
+        </div>
+      </article>
+
+      <article class="prod-card">
+        <div class="prod-media">
+          <svg viewBox="0 0 100 100" fill="none" stroke="#B88A1C" stroke-width="1.2">
+            <path d="M16 22 q34 34 68 0"/>
+            <path d="M50 22 v34" stroke-width="1.5"/>
+            <circle cx="50" cy="62" r="9" fill="#B88A1C" stroke="none"/>
+          </svg>
+        </div>
+        <div class="prod-info">
+          <h3>Collar Camino</h3>
+          <span class="material">Oro laminado 18k, cadena fina</span>
+          <span class="price">$134.000</span>
+        </div>
+      </article>
+
+      <article class="prod-card">
+        <div class="prod-media">
+          <svg viewBox="0 0 100 100" fill="none" stroke="#B88A1C" stroke-width="1.2">
+            <ellipse cx="50" cy="58" rx="17" ry="12"/>
+            <circle cx="50" cy="40" r="7"/>
+          </svg>
+        </div>
+        <div class="prod-info">
+          <h3>Anillo Devoción</h3>
+          <span class="material">Plata 925</span>
+          <span class="price">$59.000</span>
+        </div>
+      </article>
+
+      <article class="prod-card">
+        <div class="prod-media">
+          <svg viewBox="0 0 100 100" fill="none" stroke="#B88A1C" stroke-width="1.2">
+            <path d="M18 50 a32 13 0 1 0 64 0 a32 13 0 1 0 -64 0"/>
+            <circle cx="50" cy="37" r="4" fill="#B88A1C" stroke="none"/>
+            <circle cx="30" cy="50" r="4" fill="#B88A1C" stroke="none"/>
+            <circle cx="70" cy="50" r="4" fill="#B88A1C" stroke="none"/>
+            <path d="M50 63 v14 M45 77 h10"/>
+          </svg>
+        </div>
+        <div class="prod-info">
+          <h3>Rosario de Pulsera</h3>
+          <span class="material">Plata 925 y madera de olivo</span>
+          <span class="price">$89.000</span>
+        </div>
+      </article>
+
+    </div>
+    <div class="see-all">
+      <button class="btn-outline" style="color:var(--gold-dark);border-color:var(--gold-dark);">Ver toda la colección
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+    </div>
+  </div>
+</section>
+
+<section id="regalos" class="gift photo">
+  <div class="wrap gift-inner">
+    <div class="gift-copy">
+      <span class="eyebrow eyebrow--on-photo">Campaña de regalos</span>
+      <h2>Regalos con alma</h2>
+      <p>Piezas empacadas a mano, con una tarjeta para escribir tu propia bendición. Un gesto que se guarda para siempre.</p>
+      <button class="btn-gold">Ver ideas de regalo
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+    </div>
+    <svg class="gift-icon" viewBox="0 0 220 220" fill="none" stroke="#D4AF37" stroke-width="1.3">
+      <rect x="40" y="90" width="140" height="100" rx="2"/>
+      <path d="M40 130 h140"/>
+      <path d="M110 90 v100" stroke-width="1.6"/>
+      <path d="M110 90 c-18 -30 -55 -30 -55 -6 c0 14 20 6 55 6 Z"/>
+      <path d="M110 90 c18 -30 55 -30 55 -6 c0 14 -20 6 -55 6 Z"/>
+      <circle cx="90" cy="150" r="10" opacity="0.7"/>
+    </svg>
+  </div>
+</section>
+
+<section id="historia" style="background:var(--white);">
+  <div class="wrap historia-grid">
+    <div class="historia-photo photo">
+      <svg viewBox="0 0 160 200" fill="none" stroke="#fbf7ee" stroke-width="1.2">
+        <path d="M40 30 q40 -20 80 0" />
+        <path d="M80 30 v40" stroke-width="1.6"/>
+        <circle cx="80" cy="90" r="20"/>
+        <path d="M60 130 q20 14 40 0" />
+        <path d="M50 160 h60" stroke-width="1"/>
+      </svg>
+    </div>
+    <div class="historia-copy">
+      <span class="eyebrow">Desde 2014</span>
+      <h2>Nuestra historia</h2>
+      <p>Lourdes nació en un pequeño taller de plata en el sur, donde una orfebre heredó de su abuela el oficio y la costumbre de rezar mientras trabajaba. Cada pieza que sale de nuestras manos lleva esa misma calma: tiempo, silencio y devoción convertidos en metal.</p>
+      <p>Hoy seguimos trabajando con talleres artesanales que comparten ese mismo respeto por el detalle, para que cada rosario, medalla o dije sea, antes que un accesorio, un recordatorio.</p>
+      <div class="historia-stat">
+        <div><strong>11 años</strong><span>de oficio</span></div>
+        <div><strong>+40</strong><span>artesanos aliados</span></div>
+        <div><strong>100%</strong><span>hecho a mano</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="testimonios">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Testimonios</span>
+      <h2>Lo que dicen quienes ya la llevan puesta</h2>
+    </div>
+    <div class="test-grid">
+      <div class="test-card">
+        <span class="quote-mark">&ldquo;</span>
+        <div class="test-stars">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#D4AF37"><path d="M12 2l3 7h7l-5.6 4.2L18 21l-6-4.2L6 21l1.6-7.8L2 9h7z"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#D4AF37"><path d="M12 2l3 7h7l-5.6 4.2L18 21l-6-4.2L6 21l1.6-7.8L2 9h7z"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#D4AF37"><path d="M12 2l3 7h7l-5.6 4.2L18 21l-6-4.2L6 21l1.6-7.8L2 9h7z"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#D4AF37"><path d="M12 2l3 7h7l-5.6 4.2L18 21l-6-4.2L6 21l1.6-7.8L2 9h7z"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#D4AF37"><path d="M12 2l3 7h7l-5.6 4.2L18 21l-6-4.2L6 21l1.6-7.8L2 9h7z"/></svg>
+        </div>
+        <p>La medalla llegó en una caja preciosa y con un mensaje escrito a mano. Se nota que cada detalle está pensado.</p>
+        <div class="test-who"><strong>Carolina M.</strong><span>Santiago</span></div>
+      </div>
+      <div class="test-card">
+        <span class="quote-mark">&ldquo;</span>
+        <div class="test-stars">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#D4AF37"><path d="M12 2l3 7h7l-5.6 4.2L18 21l-6-4.2L6 21l1.6-7.8L2 9h7z"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#D4AF37"><path d="M12 2l3 7h7l-5.6 4.2L18 21l-6-4.2L6 21l1.6-7.8L2 9h7z"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#D4AF37"><path d="M12 2l3 7h7l-5.6 4.2L18 21l-6-4.2L6 21l1.6-7.8L2 9h7z"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#D4AF37"><path d="M12 2l3 7h7l-5.6 4.2L18 21l-6-4.2L6 21l1.6-7.8L2 9h7z"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#D4AF37"><path d="M12 2l3 7h7l-5.6 4.2L18 21l-6-4.2L6 21l1.6-7.8L2 9h7z"/></svg>
+        </div>
+        <p>Uso el rosario de pulsera todos los días. Es discreto, liviano y me acompaña sin llamar la atención.</p>
+        <div class="test-who"><strong>Josefina R.</strong><span>Valparaíso</span></div>
+      </div>
+      <div class="test-card">
+        <span class="quote-mark">&ldquo;</span>
+        <div class="test-stars">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#D4AF37"><path d="M12 2l3 7h7l-5.6 4.2L18 21l-6-4.2L6 21l1.6-7.8L2 9h7z"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#D4AF37"><path d="M12 2l3 7h7l-5.6 4.2L18 21l-6-4.2L6 21l1.6-7.8L2 9h7z"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#D4AF37"><path d="M12 2l3 7h7l-5.6 4.2L18 21l-6-4.2L6 21l1.6-7.8L2 9h7z"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#D4AF37"><path d="M12 2l3 7h7l-5.6 4.2L18 21l-6-4.2L6 21l1.6-7.8L2 9h7z"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="1.5"><path d="M12 2l3 7h7l-5.6 4.2L18 21l-6-4.2L6 21l1.6-7.8L2 9h7z"/></svg>
+        </div>
+        <p>Regalé la campaña de regalos a mi mamá y lloró al leer la tarjeta. Volveré a comprar seguro.</p>
+        <div class="test-who"><strong>Ignacio P.</strong><span>Concepción</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="background:var(--white);">
+  <div class="wrap">
+    <div class="insta-head">
+      <h2>@lourdesespiritualidad</h2>
+      <a href="#">Seguir en Instagram
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+    <div class="insta-grid">
+      <div class="insta-tile insta-1 photo">
+        <svg viewBox="0 0 60 60" fill="none" stroke="#fbf7ee" stroke-width="1.2"><circle cx="30" cy="24" r="12"/><path d="M30 36 v14"/></svg>
+        <div class="hover-icon"><svg viewBox="0 0 24 24" fill="#fff"><path d="M12 21s-7-4.6-9.5-9C.6 8.2 2.6 5 6 5c2 0 3.5 1.2 4.5 2.6C11.5 6.2 13 5 15 5c3.4 0 5.4 3.2 3.5 7-2.5 4.4-9.5 9-9.5 9z"/></svg></div>
+      </div>
+      <div class="insta-tile insta-2 photo">
+        <svg viewBox="0 0 60 60" fill="none" stroke="#D4AF37" stroke-width="1.2"><path d="M18 14 q12 12 24 0"/><path d="M30 14 v18" stroke-width="1.5"/><circle cx="30" cy="40" r="7"/></svg>
+        <div class="hover-icon"><svg viewBox="0 0 24 24" fill="#fff"><path d="M12 21s-7-4.6-9.5-9C.6 8.2 2.6 5 6 5c2 0 3.5 1.2 4.5 2.6C11.5 6.2 13 5 15 5c3.4 0 5.4 3.2 3.5 7-2.5 4.4-9.5 9-9.5 9z"/></svg></div>
+      </div>
+      <div class="insta-tile insta-3 photo">
+        <svg viewBox="0 0 60 60" fill="none" stroke="#fbf7ee" stroke-width="1.2"><circle cx="20" cy="30" r="4"/><circle cx="30" cy="24" r="4"/><circle cx="40" cy="30" r="4"/><path d="M30 34 v12 M25 46 h10"/></svg>
+        <div class="hover-icon"><svg viewBox="0 0 24 24" fill="#fff"><path d="M12 21s-7-4.6-9.5-9C.6 8.2 2.6 5 6 5c2 0 3.5 1.2 4.5 2.6C11.5 6.2 13 5 15 5c3.4 0 5.4 3.2 3.5 7-2.5 4.4-9.5 9-9.5 9z"/></svg></div>
+      </div>
+      <div class="insta-tile insta-4 photo">
+        <svg viewBox="0 0 60 60" fill="none" stroke="#B88A1C" stroke-width="1.2"><ellipse cx="30" cy="34" rx="10" ry="7"/><circle cx="30" cy="22" r="4.5"/></svg>
+        <div class="hover-icon"><svg viewBox="0 0 24 24" fill="#fff"><path d="M12 21s-7-4.6-9.5-9C.6 8.2 2.6 5 6 5c2 0 3.5 1.2 4.5 2.6C11.5 6.2 13 5 15 5c3.4 0 5.4 3.2 3.5 7-2.5 4.4-9.5 9-9.5 9z"/></svg></div>
+      </div>
+      <div class="insta-tile insta-5 photo">
+        <svg viewBox="0 0 60 60" fill="none" stroke="#D4AF37" stroke-width="1.2"><path d="M12 12 q18 18 36 0"/><path d="M30 12 v20" stroke-width="1.5"/></svg>
+        <div class="hover-icon"><svg viewBox="0 0 24 24" fill="#fff"><path d="M12 21s-7-4.6-9.5-9C.6 8.2 2.6 5 6 5c2 0 3.5 1.2 4.5 2.6C11.5 6.2 13 5 15 5c3.4 0 5.4 3.2 3.5 7-2.5 4.4-9.5 9-9.5 9z"/></svg></div>
+      </div>
+      <div class="insta-tile insta-6 photo">
+        <svg viewBox="0 0 60 60" fill="none" stroke="#fbf7ee" stroke-width="1.2"><path d="M20 20 q10 -8 20 0"/><path d="M30 20 v10" stroke-width="1.6"/><path d="M22 38 l8 10 8 -10 z"/></svg>
+        <div class="hover-icon"><svg viewBox="0 0 24 24" fill="#fff"><path d="M12 21s-7-4.6-9.5-9C.6 8.2 2.6 5 6 5c2 0 3.5 1.2 4.5 2.6C11.5 6.2 13 5 15 5c3.4 0 5.4 3.2 3.5 7-2.5 4.4-9.5 9-9.5 9z"/></svg></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer id="contacto">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <span class="name">Lourdes Espiritualidad</span>
+        <p>Joyería de fe, hecha a mano en talleres artesanales. Plata 925 y oro laminado 18k, con envío a todo el país.</p>
+        <div class="footer-social">
+          <a href="#" aria-label="Instagram"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="0.6" fill="currentColor" stroke="none"/></svg></a>
+          <a href="#" aria-label="Facebook"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M15 8h2V4h-2a4 4 0 0 0-4 4v2H9v4h2v8h4v-8h2.5l.5-4H15V8Z"/></svg></a>
+          <a href="#" aria-label="TikTok"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 3v11.5a3.5 3.5 0 1 1-3.5-3.5"/><path d="M14 7c1.2 1.6 2.6 2.3 4 2.4"/></svg></a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Tienda</h4>
+        <ul>
+          <li><a href="#">Rosarios</a></li>
+          <li><a href="#">Medallas &amp; Dijes</a></li>
+          <li><a href="#">Pulseras</a></li>
+          <li><a href="#">Collares</a></li>
+          <li><a href="#">Novedades</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Ayuda</h4>
+        <ul>
+          <li><a href="#">Envíos</a></li>
+          <li><a href="#">Cambios y devoluciones</a></li>
+          <li><a href="#">Cuidado de las piezas</a></li>
+          <li><a href="#">Contacto</a></li>
+        </ul>
+      </div>
+      <div class="footer-col newsletter">
+        <h4>Recibe novedades y bendiciones</h4>
+        <p>Nuevas colecciones, historias del taller y ofertas exclusivas, directo a tu correo.</p>
+        <form onsubmit="return false;">
+          <input type="email" placeholder="Tu correo electrónico" aria-label="Correo electrónico" required>
+          <button type="submit">Suscribirme</button>
+        </form>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 Lourdes Espiritualidad. Todos los derechos reservados.</p>
+      <div class="payment-row">
+        <span>VISA</span><span>MASTERCARD</span><span>WEBPAY</span><span>MERCADO PAGO</span>
+      </div>
+    </div>
+  </div>
+</footer>
