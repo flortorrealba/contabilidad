@@ -16,6 +16,23 @@
     --measure: 62ch;
   }
 
+  /* Velvet: the brand's actual product-photography ground (jewelry on navy velvet,
+     warm key light from one side) — used only inside .photo blocks, per brand manual. */
+  .velvet{
+    background:
+      radial-gradient(ellipse 55% 45% at 18% 18%, rgba(212,175,55,0.20), transparent 58%),
+      radial-gradient(ellipse 40% 55% at 88% 28%, rgba(255,255,255,0.05), transparent 60%),
+      radial-gradient(ellipse 60% 40% at 55% 92%, rgba(255,255,255,0.035), transparent 55%),
+      linear-gradient(150deg, #17304e 0%, #102540 28%, #0B1C34 52%, #081527 78%, #050d18 100%);
+  }
+  .badge-mark{
+    position:absolute;
+    right:14px;
+    bottom:12px;
+    z-index:3;
+    opacity:0.92;
+  }
+
   *{box-sizing:border-box;}
   html{background:var(--ivory);}
   body{
@@ -177,9 +194,6 @@
     min-height:640px;
     display:flex;
     align-items:flex-end;
-    background:
-      radial-gradient(ellipse 900px 700px at 78% 30%, rgba(212,175,55,0.20), transparent 60%),
-      linear-gradient(120deg,#efe3c8 0%, #e6d3ab 32%, #cdb387 58%, #a9865a 78%, #7c5c3d 100%);
   }
   .hero-inner{
     position:relative;
@@ -304,10 +318,6 @@
   }
   .cat-card:hover .cat-link{gap:10px;color:#fff;}
 
-  .cat-1{background:linear-gradient(160deg,#e9dcc0,#c7a877 60%,#8a6b45);}
-  .cat-2{background:linear-gradient(160deg,#f0d9c8,#d9a875 55%,#9c6b3f);}
-  .cat-3{background:linear-gradient(160deg,#e3d3ae,#b9946a 55%,#6f4f30);}
-  .cat-4{background:linear-gradient(160deg,#d8c39c,#a67f4e 55%,#5c3f24);}
 
   /* ---------- Productos ---------- */
   .prod-grid{
@@ -326,9 +336,11 @@
     align-items:center;
     justify-content:center;
     position:relative;
-    background:radial-gradient(circle at 50% 42%, #fffdf7, var(--linen) 78%);
+    isolation:isolate;
+    overflow:hidden;
   }
-  .prod-media svg{width:52%;}
+  .prod-media svg:not(.badge-mark){width:52%;}
+  .prod-media .badge-mark{width:34px;height:34px;right:10px;bottom:9px;}
   .tag-new{
     position:absolute;
     top:14px;left:14px;
@@ -349,15 +361,12 @@
     font-weight:700;
     letter-spacing:0.02em;
   }
-  .prod-card:hover .prod-media{background:radial-gradient(circle at 50% 42%, #fffdf7, #e6dcc4 78%);}
+  .prod-card:hover .prod-media{filter:brightness(1.08);}
 
   .see-all{display:flex;justify-content:center;margin-top:56px;}
 
   /* ---------- Campaña regalos ---------- */
   .gift{
-    background:
-      radial-gradient(ellipse 700px 500px at 22% 60%, rgba(212,175,55,0.16), transparent 65%),
-      linear-gradient(115deg,#0B1C34 0%, #122943 45%, #0B1C34 75%, #06121f 100%);
     padding:140px 0;
     color:#f3ead8;
   }
@@ -386,10 +395,9 @@
   }
   .historia-photo{
     height:520px;
-    background:linear-gradient(150deg,#e7d7b8,#c9a877 45%,#8a6438 80%,#4d3520);
     display:flex;align-items:center;justify-content:center;
   }
-  .historia-photo svg{width:34%;opacity:0.92;}
+  .historia-photo svg:not(.badge-mark){width:34%;opacity:0.92;}
   .historia-copy{display:flex;flex-direction:column;gap:22px;max-width:var(--measure);}
   .historia-copy h2{font-family:var(--serif);font-size:2.3rem;}
   .historia-copy p{
@@ -485,12 +493,10 @@
   .insta-tile:hover .hover-icon{background:rgba(11,28,52,0.35);}
   .insta-tile .hover-icon svg{width:24px;height:24px;opacity:0;transition:opacity .2s ease;}
   .insta-tile:hover .hover-icon svg{opacity:1;}
-  .insta-1{background:linear-gradient(160deg,#eee0c2,#c9a066 70%,#7c5330);}
-  .insta-2{background:linear-gradient(150deg,#122943,#0B1C34 70%,#050c17);}
-  .insta-3{background:linear-gradient(160deg,#e6d2ab,#b98a54 70%,#6b431f);}
-  .insta-4{background:linear-gradient(150deg,#f0e3c9,#d2ac78 70%,#875c33);}
-  .insta-5{background:linear-gradient(150deg,#16304d,#0B1C34 70%,#050c17);}
-  .insta-6{background:linear-gradient(160deg,#e9d9b8,#c19a63 70%,#7a5330);}
+  .insta-warm{background:
+    radial-gradient(ellipse 60% 50% at 25% 20%, rgba(212,175,55,0.28), transparent 60%),
+    linear-gradient(155deg,#3b2a1e 0%,#2a1d14 55%,#17110b 100%);}
+  .insta-tile .badge-mark{width:22px;height:22px;right:8px;bottom:7px;opacity:0.85;}
 
   /* ---------- Footer ---------- */
   footer{
@@ -505,7 +511,6 @@
     padding-bottom:64px;
   }
   .footer-brand{display:flex;flex-direction:column;gap:16px;max-width:320px;}
-  .footer-brand .name{font-family:var(--serif);font-style:italic;font-size:1.6rem;}
   .footer-brand p{font-size:0.86rem;line-height:1.6;color:#5a5348;}
   .footer-social{display:flex;gap:16px;margin-top:6px;}
   .footer-social a{
@@ -559,6 +564,28 @@
   }
 </style>
 
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="goldGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F3D77B"/>
+      <stop offset="0.5" stop-color="#D4AF37"/>
+      <stop offset="1" stop-color="#B88A1C"/>
+    </linearGradient>
+    <symbol id="lourdes-badge" viewBox="0 0 200 200">
+      <circle cx="100" cy="100" r="93" fill="none" stroke="url(#goldGrad)" stroke-width="2"/>
+      <circle cx="100" cy="100" r="86" fill="none" stroke="url(#goldGrad)" stroke-width="0.75" opacity="0.8"/>
+      <text x="100" y="98" text-anchor="middle" font-family="Georgia, 'Iowan Old Style', serif" font-style="italic" font-size="38" fill="url(#goldGrad)">Lourdes</text>
+      <path d="M62 106 Q100 118 132 104" fill="none" stroke="url(#goldGrad)" stroke-width="1" opacity="0.7"/>
+      <text x="97" y="130" text-anchor="middle" font-family="-apple-system,Arial,sans-serif" font-size="9" letter-spacing="1.6" fill="url(#goldGrad)">ESPIRITUALIDAD</text>
+      <circle cx="150" cy="98" r="2.4" fill="url(#goldGrad)"/>
+      <circle cx="154" cy="107" r="2.4" fill="url(#goldGrad)"/>
+      <circle cx="155" cy="117" r="2.4" fill="url(#goldGrad)"/>
+      <circle cx="152" cy="127" r="2.4" fill="url(#goldGrad)"/>
+      <path d="M150 136 v13 M145 142 h10" stroke="url(#goldGrad)" stroke-width="1.6"/>
+    </symbol>
+  </defs>
+</svg>
+
 <header class="site">
   <div class="wrap header-row">
     <a class="logo" href="#" aria-label="Lourdes Espiritualidad, inicio">
@@ -587,7 +614,8 @@
   </div>
 </header>
 
-<section class="hero photo">
+<section class="hero photo velvet">
+  <svg class="badge-mark" viewBox="0 0 200 200" width="72" height="72"><use href="#lourdes-badge"/></svg>
   <div class="hero-inner">
     <div class="hero-copy">
       <span class="eyebrow eyebrow--on-photo">Colección permanente</span>
@@ -597,16 +625,16 @@
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
       </button>
     </div>
-    <svg class="hero-piece" viewBox="0 0 200 260" fill="none" stroke="#fbf7ee" stroke-width="1.3">
-      <path d="M100 10 C130 40, 150 90, 120 130 C160 140, 175 175, 150 205" opacity="0.55"/>
-      <circle cx="100" cy="42" r="7"/>
-      <circle cx="115" cy="63" r="5.5"/>
-      <circle cx="122" cy="90" r="5.5"/>
-      <circle cx="118" cy="118" r="5.5"/>
+    <svg class="hero-piece" viewBox="0 0 200 260" fill="none" stroke="url(#goldGrad)" stroke-width="1.3">
+      <path d="M100 10 C130 40, 150 90, 120 130 C160 140, 175 175, 150 205" opacity="0.6"/>
+      <circle cx="100" cy="42" r="7" fill="url(#goldGrad)" fill-opacity="0.35"/>
+      <circle cx="115" cy="63" r="5.5" fill="url(#goldGrad)" fill-opacity="0.35"/>
+      <circle cx="122" cy="90" r="5.5" fill="url(#goldGrad)" fill-opacity="0.35"/>
+      <circle cx="118" cy="118" r="5.5" fill="url(#goldGrad)" fill-opacity="0.35"/>
       <path d="M100 150 v70" stroke-width="1.6"/>
       <path d="M78 172 h44" stroke-width="1.6"/>
       <path d="M100 150 v-8" stroke-width="1.6"/>
-      <circle cx="100" cy="235" r="10" fill="#D4AF37" stroke="none" opacity="0.85"/>
+      <circle cx="100" cy="235" r="10" fill="url(#goldGrad)" stroke="none" opacity="0.9"/>
     </svg>
   </div>
   <div class="scroll-cue">
@@ -623,52 +651,56 @@
       <p>Cada pieza, un gesto de devoción.</p>
     </div>
     <div class="cat-grid">
-      <a class="cat-card cat-1 photo" href="#">
-        <svg class="cat-icon" viewBox="0 0 60 60" fill="none" stroke="#fbf7ee" stroke-width="1.3">
+      <a class="cat-card photo velvet" href="#">
+        <svg class="badge-mark" viewBox="0 0 200 200" width="46" height="46"><use href="#lourdes-badge"/></svg>
+        <svg class="cat-icon" viewBox="0 0 60 60" fill="none" stroke="#D4AF37" stroke-width="1.3">
           <circle cx="30" cy="12" r="4"/><circle cx="41" cy="18" r="4"/><circle cx="45" cy="30" r="4"/>
           <circle cx="41" cy="42" r="4"/><circle cx="30" cy="48" r="4"/><circle cx="19" cy="42" r="4"/>
           <circle cx="15" cy="30" r="4"/><circle cx="19" cy="18" r="4"/>
           <path d="M30 48 v9 M26 57 h8" stroke-width="1.6"/>
         </svg>
         <h3>Rosarios</h3>
-        <p>Cuentas talladas, madera de olivo y plata.</p>
+        <p>Cuentas de plata italiana y madera de olivo.</p>
         <span class="cat-link">Ver rosarios
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </span>
       </a>
-      <a class="cat-card cat-2 photo" href="#">
-        <svg class="cat-icon" viewBox="0 0 60 60" fill="none" stroke="#fbf7ee" stroke-width="1.3">
+      <a class="cat-card photo velvet" href="#">
+        <svg class="badge-mark" viewBox="0 0 200 200" width="46" height="46"><use href="#lourdes-badge"/></svg>
+        <svg class="cat-icon" viewBox="0 0 60 60" fill="none" stroke="#D4AF37" stroke-width="1.3">
           <circle cx="30" cy="26" r="16"/>
           <path d="M30 16 v20 M21 26 h18" stroke-width="1.6"/>
           <path d="M18 44 q12 10 24 0" />
         </svg>
         <h3>Medallas &amp; Dijes</h3>
-        <p>Advocaciones grabadas en oro laminado.</p>
+        <p>Advocaciones grabadas en oro laminado y plata.</p>
         <span class="cat-link">Ver medallas
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </span>
       </a>
-      <a class="cat-card cat-3 photo" href="#">
-        <svg class="cat-icon" viewBox="0 0 60 60" fill="none" stroke="#fbf7ee" stroke-width="1.3">
+      <a class="cat-card photo velvet" href="#">
+        <svg class="badge-mark" viewBox="0 0 200 200" width="46" height="46"><use href="#lourdes-badge"/></svg>
+        <svg class="cat-icon" viewBox="0 0 60 60" fill="none" stroke="#D4AF37" stroke-width="1.3">
           <path d="M6 30 a24 10 0 1 0 48 0 a24 10 0 1 0 -48 0" />
-          <circle cx="30" cy="20" r="3.5" fill="#fbf7ee" stroke="none"/>
-          <circle cx="14" cy="30" r="3.5" fill="#fbf7ee" stroke="none"/>
-          <circle cx="46" cy="30" r="3.5" fill="#fbf7ee" stroke="none"/>
+          <circle cx="30" cy="20" r="3.5" fill="#D4AF37" stroke="none"/>
+          <circle cx="14" cy="30" r="3.5" fill="#D4AF37" stroke="none"/>
+          <circle cx="46" cy="30" r="3.5" fill="#D4AF37" stroke="none"/>
         </svg>
         <h3>Pulseras</h3>
-        <p>Cadenas finas con dijes de significado.</p>
+        <p>Acero inoxidable y baño de oro, dijes de significado.</p>
         <span class="cat-link">Ver pulseras
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </span>
       </a>
-      <a class="cat-card cat-4 photo" href="#">
-        <svg class="cat-icon" viewBox="0 0 60 60" fill="none" stroke="#fbf7ee" stroke-width="1.3">
+      <a class="cat-card photo velvet" href="#">
+        <svg class="badge-mark" viewBox="0 0 200 200" width="46" height="46"><use href="#lourdes-badge"/></svg>
+        <svg class="cat-icon" viewBox="0 0 60 60" fill="none" stroke="#D4AF37" stroke-width="1.3">
           <path d="M12 10 q18 20 36 0" />
           <path d="M30 10 v18" stroke-width="1.6"/>
           <path d="M22 28 l8 10 8 -10 z" />
         </svg>
         <h3>Collares</h3>
-        <p>Piezas delicadas para el día a día.</p>
+        <p>Cadenas finas con medallas para el día a día.</p>
         <span class="cat-link">Ver collares
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </span>
@@ -687,127 +719,140 @@
     <div class="prod-grid">
 
       <article class="prod-card">
-        <div class="prod-media">
+        <div class="prod-media photo velvet">
           <span class="tag-new">Nuevo</span>
-          <svg viewBox="0 0 100 100" fill="none" stroke="#B88A1C" stroke-width="1.2">
-            <circle cx="50" cy="20" r="4.5"/><circle cx="63" cy="27" r="4"/><circle cx="68" cy="42" r="4"/>
-            <circle cx="63" cy="57" r="4"/><circle cx="50" cy="64" r="4"/><circle cx="37" cy="57" r="4"/>
-            <circle cx="32" cy="42" r="4"/><circle cx="37" cy="27" r="4"/>
-            <path d="M50 64 v18 M45 82 h10"/>
-          </svg>
-        </div>
-        <div class="prod-info">
-          <h3>Rosario Regina</h3>
-          <span class="material">Plata 925 y ónix</span>
-          <span class="price">$128.000</span>
-        </div>
-      </article>
-
-      <article class="prod-card">
-        <div class="prod-media">
-          <svg viewBox="0 0 100 100" fill="none" stroke="#B88A1C" stroke-width="1.2">
-            <circle cx="50" cy="42" r="24"/>
-            <path d="M50 26 v32 M36 42 h28"/>
-            <path d="M30 68 q20 16 40 0"/>
-          </svg>
-        </div>
-        <div class="prod-info">
-          <h3>Medalla Virgen del Carmen</h3>
-          <span class="material">Oro laminado 18k</span>
-          <span class="price">$96.000</span>
-        </div>
-      </article>
-
-      <article class="prod-card">
-        <div class="prod-media">
-          <svg viewBox="0 0 100 100" fill="none" stroke="#B88A1C" stroke-width="1.2">
-            <path d="M14 50 a36 15 0 1 0 72 0 a36 15 0 1 0 -72 0"/>
-            <circle cx="50" cy="34" r="4.5" fill="#B88A1C" stroke="none"/>
-            <circle cx="26" cy="50" r="4.5" fill="#B88A1C" stroke="none"/>
-            <circle cx="74" cy="50" r="4.5" fill="#B88A1C" stroke="none"/>
-          </svg>
-        </div>
-        <div class="prod-info">
-          <h3>Pulsera Fe</h3>
-          <span class="material">Plata 925 y perla cultivada</span>
-          <span class="price">$74.000</span>
-        </div>
-      </article>
-
-      <article class="prod-card">
-        <div class="prod-media">
-          <span class="tag-new">Nuevo</span>
-          <svg viewBox="0 0 100 100" fill="none" stroke="#B88A1C" stroke-width="1.2">
-            <path d="M20 18 q30 30 60 0"/>
-            <path d="M50 18 v30" stroke-width="1.5"/>
-            <path d="M38 48 l12 16 12 -16 z"/>
-          </svg>
-        </div>
-        <div class="prod-info">
-          <h3>Cruz Serenidad</h3>
-          <span class="material">Oro laminado 18k</span>
-          <span class="price">$112.000</span>
-        </div>
-      </article>
-
-      <article class="prod-card">
-        <div class="prod-media">
-          <svg viewBox="0 0 100 100" fill="none" stroke="#B88A1C" stroke-width="1.2">
-            <path d="M22 20 q28 26 56 0"/>
-            <path d="M50 20 v22" stroke-width="1.5"/>
-            <path d="M50 46 c-14 0 -20 12 -20 20 c0 10 9 16 20 16 c11 0 20 -6 20 -16 c0 -8 -6 -20 -20 -20 Z"/>
-          </svg>
-        </div>
-        <div class="prod-info">
-          <h3>Dije Corazón Sagrado</h3>
-          <span class="material">Plata 925</span>
-          <span class="price">$68.000</span>
-        </div>
-      </article>
-
-      <article class="prod-card">
-        <div class="prod-media">
-          <svg viewBox="0 0 100 100" fill="none" stroke="#B88A1C" stroke-width="1.2">
+          <svg viewBox="0 0 100 100" fill="none" stroke="#D4AF37" stroke-width="1.2">
             <path d="M16 22 q34 34 68 0"/>
-            <path d="M50 22 v34" stroke-width="1.5"/>
-            <circle cx="50" cy="62" r="9" fill="#B88A1C" stroke="none"/>
+            <path d="M50 22 v30" stroke-width="1.5"/>
+            <circle cx="50" cy="60" r="20"/>
+            <path d="M50 44 v32 M36 60 h28" stroke-width="1"/>
+            <path d="M30 82 q20 14 40 0"/>
           </svg>
+          <svg class="badge-mark" viewBox="0 0 200 200"><use href="#lourdes-badge"/></svg>
         </div>
         <div class="prod-info">
-          <h3>Collar Camino</h3>
-          <span class="material">Oro laminado 18k, cadena fina</span>
-          <span class="price">$134.000</span>
+          <h3>Cadena con Medalla Virgen de Lourdes</h3>
+          <span class="material">Acero inoxidable dorado</span>
+          <span class="price">$8.990</span>
         </div>
       </article>
 
       <article class="prod-card">
-        <div class="prod-media">
-          <svg viewBox="0 0 100 100" fill="none" stroke="#B88A1C" stroke-width="1.2">
-            <ellipse cx="50" cy="58" rx="17" ry="12"/>
-            <circle cx="50" cy="40" r="7"/>
+        <div class="prod-media photo velvet">
+          <svg viewBox="0 0 100 100" fill="none" stroke="#D4AF37" stroke-width="1.2">
+            <ellipse cx="50" cy="58" rx="18" ry="13"/>
+            <path d="M35 47 l5 -14 M65 47 l-5 -14" stroke-width="1"/>
+            <circle cx="50" cy="40" r="5" fill="#D4AF37" fill-opacity="0.4"/>
           </svg>
+          <svg class="badge-mark" viewBox="0 0 200 200"><use href="#lourdes-badge"/></svg>
         </div>
         <div class="prod-info">
-          <h3>Anillo Devoción</h3>
-          <span class="material">Plata 925</span>
-          <span class="price">$59.000</span>
+          <h3>Anillo Plata Italiana</h3>
+          <span class="material">Plata 925, importado de Italia</span>
+          <span class="price">$47.590</span>
         </div>
       </article>
 
       <article class="prod-card">
-        <div class="prod-media">
-          <svg viewBox="0 0 100 100" fill="none" stroke="#B88A1C" stroke-width="1.2">
+        <div class="prod-media photo velvet">
+          <svg viewBox="0 0 100 100" fill="none" stroke="#D4AF37" stroke-width="1.2">
+            <path d="M18 20 q32 32 64 0"/>
+            <path d="M50 20 v36" stroke-width="1.5"/>
+            <circle cx="50" cy="66" r="10" fill="#D4AF37" fill-opacity="0.35"/>
+          </svg>
+          <svg class="badge-mark" viewBox="0 0 200 200"><use href="#lourdes-badge"/></svg>
+        </div>
+        <div class="prod-info">
+          <h3>Cadena Rosario con Baño de Oro 14k</h3>
+          <span class="material">Baño de oro 14k</span>
+          <span class="price">$6.990</span>
+        </div>
+      </article>
+
+      <article class="prod-card">
+        <div class="prod-media photo velvet">
+          <span class="tag-new">Nuevo</span>
+          <svg viewBox="0 0 100 100" fill="none" stroke="#D4AF37" stroke-width="1.2">
+            <path d="M14 52 a36 15 0 1 0 72 0 a36 15 0 1 0 -72 0"/>
+            <circle cx="50" cy="36" r="4" fill="#D4AF37" stroke="none"/>
+            <circle cx="26" cy="52" r="4" fill="#D4AF37" stroke="none"/>
+            <circle cx="74" cy="52" r="4" fill="#D4AF37" stroke="none"/>
+          </svg>
+          <svg class="badge-mark" viewBox="0 0 200 200"><use href="#lourdes-badge"/></svg>
+        </div>
+        <div class="prod-info">
+          <h3>Denario Pulsera Tricolor Oro 18k</h3>
+          <span class="material">Baño de oro 18k y circonitas</span>
+          <span class="price">$4.990</span>
+        </div>
+      </article>
+
+      <article class="prod-card">
+        <div class="prod-media photo velvet">
+          <svg viewBox="0 0 100 100" fill="none" stroke="#D4AF37" stroke-width="1.2">
+            <path d="M22 20 q28 26 56 0"/>
+            <path d="M50 20 v24" stroke-width="1.5"/>
+            <path d="M38 50 l12 16 12 -16 z"/>
+            <circle cx="50" cy="58" r="16" opacity="0.6"/>
+          </svg>
+          <svg class="badge-mark" viewBox="0 0 200 200"><use href="#lourdes-badge"/></svg>
+        </div>
+        <div class="prod-info">
+          <h3>Cadena con Cruz y Medalla Milagrosa</h3>
+          <span class="material">Acero inoxidable</span>
+          <span class="price">$8.990</span>
+        </div>
+      </article>
+
+      <article class="prod-card">
+        <div class="prod-media photo velvet">
+          <span class="tag-new">Nuevo</span>
+          <svg viewBox="0 0 100 100" fill="none" stroke="#D4AF37" stroke-width="1.2">
+            <path d="M20 18 q30 30 60 0"/>
+            <path d="M50 18 v28" stroke-width="1.5"/>
+            <path d="M38 46 l12 16 12 -16 z" opacity="0.75"/>
+          </svg>
+          <svg class="badge-mark" viewBox="0 0 200 200"><use href="#lourdes-badge"/></svg>
+        </div>
+        <div class="prod-info">
+          <h3>Cruz de Madera de Olivo, Italia</h3>
+          <span class="material">Madera de olivo importada</span>
+          <span class="price">$4.990</span>
+        </div>
+      </article>
+
+      <article class="prod-card">
+        <div class="prod-media photo velvet">
+          <svg viewBox="0 0 100 100" fill="none" stroke="#D4AF37" stroke-width="1.2">
             <path d="M18 50 a32 13 0 1 0 64 0 a32 13 0 1 0 -64 0"/>
-            <circle cx="50" cy="37" r="4" fill="#B88A1C" stroke="none"/>
-            <circle cx="30" cy="50" r="4" fill="#B88A1C" stroke="none"/>
-            <circle cx="70" cy="50" r="4" fill="#B88A1C" stroke="none"/>
+            <circle cx="50" cy="37" r="4" fill="#D4AF37" stroke="none"/>
+            <circle cx="30" cy="50" r="4" fill="#D4AF37" stroke="none"/>
+            <circle cx="70" cy="50" r="4" fill="#D4AF37" stroke="none"/>
             <path d="M50 63 v14 M45 77 h10"/>
           </svg>
+          <svg class="badge-mark" viewBox="0 0 200 200"><use href="#lourdes-badge"/></svg>
         </div>
         <div class="prod-info">
-          <h3>Rosario de Pulsera</h3>
-          <span class="material">Plata 925 y madera de olivo</span>
-          <span class="price">$89.000</span>
+          <h3>Pulsera San Benito</h3>
+          <span class="material">Acero inoxidable</span>
+          <span class="price">$2.490</span>
+        </div>
+      </article>
+
+      <article class="prod-card">
+        <div class="prod-media photo velvet">
+          <span class="tag-new">Nuevo</span>
+          <svg viewBox="0 0 100 100" fill="none" stroke="#D4AF37" stroke-width="1.2">
+            <path d="M16 22 q34 34 68 0"/>
+            <path d="M50 22 v30" stroke-width="1.5"/>
+            <path d="M32 62 q18 -10 36 0 q0 16 -18 20 q-18 -4 -18 -20 Z"/>
+          </svg>
+          <svg class="badge-mark" viewBox="0 0 200 200"><use href="#lourdes-badge"/></svg>
+        </div>
+        <div class="prod-info">
+          <h3>Cadena Chapada en Oro, Virgen de Guadalupe</h3>
+          <span class="material">Oro laminado y circonitas</span>
+          <span class="price">$9.990</span>
         </div>
       </article>
 
@@ -820,7 +865,8 @@
   </div>
 </section>
 
-<section id="regalos" class="gift photo">
+<section id="regalos" class="gift photo velvet">
+  <svg class="badge-mark" viewBox="0 0 200 200" width="64" height="64"><use href="#lourdes-badge"/></svg>
   <div class="wrap gift-inner">
     <div class="gift-copy">
       <span class="eyebrow eyebrow--on-photo">Campaña de regalos</span>
@@ -830,37 +876,39 @@
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
       </button>
     </div>
-    <svg class="gift-icon" viewBox="0 0 220 220" fill="none" stroke="#D4AF37" stroke-width="1.3">
+    <svg class="gift-icon" viewBox="0 0 220 220" fill="none" stroke="url(#goldGrad)" stroke-width="1.3">
       <rect x="40" y="90" width="140" height="100" rx="2"/>
       <path d="M40 130 h140"/>
       <path d="M110 90 v100" stroke-width="1.6"/>
       <path d="M110 90 c-18 -30 -55 -30 -55 -6 c0 14 20 6 55 6 Z"/>
       <path d="M110 90 c18 -30 55 -30 55 -6 c0 14 -20 6 -55 6 Z"/>
       <circle cx="90" cy="150" r="10" opacity="0.7"/>
+      <path d="M150 130 v22 M144 152 h12" stroke-width="1.4" opacity="0.85"/>
     </svg>
   </div>
 </section>
 
 <section id="historia" style="background:var(--white);">
   <div class="wrap historia-grid">
-    <div class="historia-photo photo">
-      <svg viewBox="0 0 160 200" fill="none" stroke="#fbf7ee" stroke-width="1.2">
+    <div class="historia-photo photo velvet">
+      <svg viewBox="0 0 160 200" fill="none" stroke="#D4AF37" stroke-width="1.2">
         <path d="M40 30 q40 -20 80 0" />
         <path d="M80 30 v40" stroke-width="1.6"/>
         <circle cx="80" cy="90" r="20"/>
         <path d="M60 130 q20 14 40 0" />
         <path d="M50 160 h60" stroke-width="1"/>
       </svg>
+      <svg class="badge-mark" viewBox="0 0 200 200" width="58" height="58"><use href="#lourdes-badge"/></svg>
     </div>
     <div class="historia-copy">
-      <span class="eyebrow">Desde 2014</span>
+      <span class="eyebrow">Nuestro origen</span>
       <h2>Nuestra historia</h2>
-      <p>Lourdes nació en un pequeño taller de plata en el sur, donde una orfebre heredó de su abuela el oficio y la costumbre de rezar mientras trabajaba. Cada pieza que sale de nuestras manos lleva esa misma calma: tiempo, silencio y devoción convertidos en metal.</p>
-      <p>Hoy seguimos trabajando con talleres artesanales que comparten ese mismo respeto por el detalle, para que cada rosario, medalla o dije sea, antes que un accesorio, un recordatorio.</p>
+      <p>Lourdes nació de la costumbre familiar de traer piezas de fe desde Italia: plata trabajada a mano, cruces de madera de olivo, medallas que cada generación regala a la siguiente. Empezamos seleccionando esas piezas para quienes las buscaban, y ese gesto se convirtió en oficio.</p>
+      <p>Hoy curamos cada colección con el mismo criterio del primer viaje: plata italiana, oro laminado de calidad y advocaciones que de verdad significan algo, para que cada rosario, medalla o dije sea, antes que un accesorio, un recordatorio.</p>
       <div class="historia-stat">
-        <div><strong>11 años</strong><span>de oficio</span></div>
-        <div><strong>+40</strong><span>artesanos aliados</span></div>
-        <div><strong>100%</strong><span>hecho a mano</span></div>
+        <div><strong>+20</strong><span>advocaciones</span></div>
+        <div><strong>Italia</strong><span>origen de la plata</span></div>
+        <div><strong>925</strong><span>ley de plata</span></div>
       </div>
     </div>
   </div>
@@ -922,28 +970,34 @@
       </a>
     </div>
     <div class="insta-grid">
-      <div class="insta-tile insta-1 photo">
-        <svg viewBox="0 0 60 60" fill="none" stroke="#fbf7ee" stroke-width="1.2"><circle cx="30" cy="24" r="12"/><path d="M30 36 v14"/></svg>
+      <div class="insta-tile photo velvet">
+        <svg viewBox="0 0 60 60" fill="none" stroke="#D4AF37" stroke-width="1.2"><circle cx="30" cy="24" r="12"/><path d="M30 36 v14"/></svg>
+        <svg class="badge-mark" viewBox="0 0 200 200"><use href="#lourdes-badge"/></svg>
         <div class="hover-icon"><svg viewBox="0 0 24 24" fill="#fff"><path d="M12 21s-7-4.6-9.5-9C.6 8.2 2.6 5 6 5c2 0 3.5 1.2 4.5 2.6C11.5 6.2 13 5 15 5c3.4 0 5.4 3.2 3.5 7-2.5 4.4-9.5 9-9.5 9z"/></svg></div>
       </div>
-      <div class="insta-tile insta-2 photo">
+      <div class="insta-tile photo insta-warm">
         <svg viewBox="0 0 60 60" fill="none" stroke="#D4AF37" stroke-width="1.2"><path d="M18 14 q12 12 24 0"/><path d="M30 14 v18" stroke-width="1.5"/><circle cx="30" cy="40" r="7"/></svg>
+        <svg class="badge-mark" viewBox="0 0 200 200"><use href="#lourdes-badge"/></svg>
         <div class="hover-icon"><svg viewBox="0 0 24 24" fill="#fff"><path d="M12 21s-7-4.6-9.5-9C.6 8.2 2.6 5 6 5c2 0 3.5 1.2 4.5 2.6C11.5 6.2 13 5 15 5c3.4 0 5.4 3.2 3.5 7-2.5 4.4-9.5 9-9.5 9z"/></svg></div>
       </div>
-      <div class="insta-tile insta-3 photo">
-        <svg viewBox="0 0 60 60" fill="none" stroke="#fbf7ee" stroke-width="1.2"><circle cx="20" cy="30" r="4"/><circle cx="30" cy="24" r="4"/><circle cx="40" cy="30" r="4"/><path d="M30 34 v12 M25 46 h10"/></svg>
+      <div class="insta-tile photo velvet">
+        <svg viewBox="0 0 60 60" fill="none" stroke="#D4AF37" stroke-width="1.2"><circle cx="20" cy="30" r="4"/><circle cx="30" cy="24" r="4"/><circle cx="40" cy="30" r="4"/><path d="M30 34 v12 M25 46 h10"/></svg>
+        <svg class="badge-mark" viewBox="0 0 200 200"><use href="#lourdes-badge"/></svg>
         <div class="hover-icon"><svg viewBox="0 0 24 24" fill="#fff"><path d="M12 21s-7-4.6-9.5-9C.6 8.2 2.6 5 6 5c2 0 3.5 1.2 4.5 2.6C11.5 6.2 13 5 15 5c3.4 0 5.4 3.2 3.5 7-2.5 4.4-9.5 9-9.5 9z"/></svg></div>
       </div>
-      <div class="insta-tile insta-4 photo">
-        <svg viewBox="0 0 60 60" fill="none" stroke="#B88A1C" stroke-width="1.2"><ellipse cx="30" cy="34" rx="10" ry="7"/><circle cx="30" cy="22" r="4.5"/></svg>
+      <div class="insta-tile photo insta-warm">
+        <svg viewBox="0 0 60 60" fill="none" stroke="#D4AF37" stroke-width="1.2"><ellipse cx="30" cy="34" rx="10" ry="7"/><circle cx="30" cy="22" r="4.5"/></svg>
+        <svg class="badge-mark" viewBox="0 0 200 200"><use href="#lourdes-badge"/></svg>
         <div class="hover-icon"><svg viewBox="0 0 24 24" fill="#fff"><path d="M12 21s-7-4.6-9.5-9C.6 8.2 2.6 5 6 5c2 0 3.5 1.2 4.5 2.6C11.5 6.2 13 5 15 5c3.4 0 5.4 3.2 3.5 7-2.5 4.4-9.5 9-9.5 9z"/></svg></div>
       </div>
-      <div class="insta-tile insta-5 photo">
+      <div class="insta-tile photo velvet">
         <svg viewBox="0 0 60 60" fill="none" stroke="#D4AF37" stroke-width="1.2"><path d="M12 12 q18 18 36 0"/><path d="M30 12 v20" stroke-width="1.5"/></svg>
+        <svg class="badge-mark" viewBox="0 0 200 200"><use href="#lourdes-badge"/></svg>
         <div class="hover-icon"><svg viewBox="0 0 24 24" fill="#fff"><path d="M12 21s-7-4.6-9.5-9C.6 8.2 2.6 5 6 5c2 0 3.5 1.2 4.5 2.6C11.5 6.2 13 5 15 5c3.4 0 5.4 3.2 3.5 7-2.5 4.4-9.5 9-9.5 9z"/></svg></div>
       </div>
-      <div class="insta-tile insta-6 photo">
-        <svg viewBox="0 0 60 60" fill="none" stroke="#fbf7ee" stroke-width="1.2"><path d="M20 20 q10 -8 20 0"/><path d="M30 20 v10" stroke-width="1.6"/><path d="M22 38 l8 10 8 -10 z"/></svg>
+      <div class="insta-tile photo velvet">
+        <svg viewBox="0 0 60 60" fill="none" stroke="#D4AF37" stroke-width="1.2"><path d="M20 20 q10 -8 20 0"/><path d="M30 20 v10" stroke-width="1.6"/><path d="M22 38 l8 10 8 -10 z"/></svg>
+        <svg class="badge-mark" viewBox="0 0 200 200"><use href="#lourdes-badge"/></svg>
         <div class="hover-icon"><svg viewBox="0 0 24 24" fill="#fff"><path d="M12 21s-7-4.6-9.5-9C.6 8.2 2.6 5 6 5c2 0 3.5 1.2 4.5 2.6C11.5 6.2 13 5 15 5c3.4 0 5.4 3.2 3.5 7-2.5 4.4-9.5 9-9.5 9z"/></svg></div>
       </div>
     </div>
@@ -954,8 +1008,8 @@
   <div class="wrap">
     <div class="footer-grid">
       <div class="footer-brand">
-        <span class="name">Lourdes Espiritualidad</span>
-        <p>Joyería de fe, hecha a mano en talleres artesanales. Plata 925 y oro laminado 18k, con envío a todo el país.</p>
+        <svg width="52" height="52" viewBox="0 0 200 200"><use href="#lourdes-badge"/></svg>
+        <p>Joyería de fe: plata italiana 925, oro laminado y advocaciones seleccionadas con criterio. Envío a todo el país.</p>
         <div class="footer-social">
           <a href="#" aria-label="Instagram"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="0.6" fill="currentColor" stroke="none"/></svg></a>
           <a href="#" aria-label="Facebook"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M15 8h2V4h-2a4 4 0 0 0-4 4v2H9v4h2v8h4v-8h2.5l.5-4H15V8Z"/></svg></a>
