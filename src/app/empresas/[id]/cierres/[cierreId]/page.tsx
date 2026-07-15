@@ -1,12 +1,19 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { obtenerBalanceComprobacion, obtenerEstadoResultados, obtenerEstadoSituacionFinanciera } from "@/lib/reportes";
+import {
+  obtenerBalanceComprobacion,
+  obtenerEstadoResultados,
+  obtenerEstadoSituacionFinanciera,
+  obtenerValidacionBalance,
+} from "@/lib/reportes";
 import { formatearFecha } from "@/lib/format";
 import { ReportTabs } from "@/components/cierres/ReportTabs";
 import { BalanceTable } from "@/components/cierres/BalanceTable";
 import { EstadoResultadosTable } from "@/components/cierres/EstadoResultadosTable";
 import { EstadoSituacionFinancieraTable } from "@/components/cierres/EstadoSituacionFinancieraTable";
 import { DeleteCierreButton } from "@/components/cierres/DeleteCierreButton";
+import { UploadValidacionBalanceForm } from "@/components/validacion/UploadValidacionBalanceForm";
+import { ValidacionBalanceCard } from "@/components/validacion/ValidacionBalanceCard";
 
 export default async function CierreDetallePage({
   params,
@@ -18,10 +25,11 @@ export default async function CierreDetallePage({
   const cierre = await prisma.cierre.findUnique({ where: { id: cierreId } });
   if (!cierre || cierre.empresaId !== empresaId) notFound();
 
-  const [balance, estadoResultados, eff] = await Promise.all([
+  const [balance, estadoResultados, eff, validacionBalance] = await Promise.all([
     obtenerBalanceComprobacion(cierreId),
     obtenerEstadoResultados(cierreId),
     obtenerEstadoSituacionFinanciera(cierreId),
+    obtenerValidacionBalance(cierreId),
   ]);
 
   return (
@@ -55,6 +63,18 @@ export default async function CierreDetallePage({
         resultados={<EstadoResultadosTable estado={estadoResultados} />}
         eff={<EstadoSituacionFinancieraTable eff={eff} empresaId={empresaId} cierreId={cierreId} />}
         balance={<BalanceTable balance={balance} empresaId={empresaId} cierreId={cierreId} />}
+        validacion={
+          <div className="mt-4 space-y-4">
+            <UploadValidacionBalanceForm empresaId={empresaId} cierreId={cierreId} />
+            {validacionBalance ? (
+              <ValidacionBalanceCard validacion={validacionBalance} />
+            ) : (
+              <p className="text-sm text-neutral-500">
+                Aún no has subido el Balance de iContador para este cierre.
+              </p>
+            )}
+          </div>
+        }
       />
     </div>
   );

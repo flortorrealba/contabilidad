@@ -6,17 +6,20 @@ export function ReportTabs({
   resultados,
   eff,
   balance,
+  validacion,
 }: {
   resultados: React.ReactNode;
   eff: React.ReactNode;
   balance: React.ReactNode;
+  validacion?: React.ReactNode;
 }) {
-  const [tab, setTab] = useState<"resultados" | "eff" | "balance">("resultados");
+  const [tab, setTab] = useState<"resultados" | "eff" | "balance" | "validacion">("resultados");
 
   const tabs = [
     { id: "resultados" as const, label: "Estado de Resultados" },
     { id: "eff" as const, label: "Estado de Situación Financiera" },
     { id: "balance" as const, label: "Balance de Comprobación" },
+    ...(validacion ? [{ id: "validacion" as const, label: "Validar contra iContador" }] : []),
   ];
 
   return (
@@ -40,6 +43,7 @@ export function ReportTabs({
       <div className={tab === "resultados" ? "block" : "hidden"}>{resultados}</div>
       <div className={tab === "eff" ? "block" : "hidden"}>{eff}</div>
       <div className={tab === "balance" ? "block" : "hidden"}>{balance}</div>
+      {validacion && <div className={tab === "validacion" ? "block" : "hidden"}>{validacion}</div>}
     </div>
   );
 }

@@ -73,6 +73,7 @@ model Cierre {
   empresa       Empresa  @relation(fields: [empresaId], references: [id], onDelete: Cascade)
   creadoPor     User?    @relation("CierreCreadoPor", fields: [creadoPorId], references: [id])
   asientos      Asiento[]
+  validaciones  ValidacionExterna[]
 }
 
 model Asiento {
@@ -94,4 +95,22 @@ model Asiento {
   @@index([cierreId])
   @@index([cuentaId])
   @@index([cuentaId, codigoAnalisis])
+}
+
+// tipo: "BALANCE" (Balance/Mayor completo de iContador) | "AUXILIAR" (Facturas/Honorarios
+// pendientes de pago de iContador, por cuenta). datos guarda el resultado ya parseado del
+// archivo (ver src/lib/icontador-parser.ts) para poder recalcular la comparación sin
+// tener que volver a leer el Excel.
+model ValidacionExterna {
+  id            String   @id @default(cuid())
+  cierreId      String
+  tipo          String
+  archivoOrigen String?
+  cuentaCodigo  String?
+  cuentaNombre  String?
+  datos         Json
+  createdAt     DateTime @default(now())
+  cierre        Cierre   @relation(fields: [cierreId], references: [id], onDelete: Cascade)
+
+  @@index([cierreId])
 }

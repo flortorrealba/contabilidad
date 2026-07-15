@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { obtenerAuxiliarCuenta, obtenerMayorCuenta } from "@/lib/reportes";
+import { obtenerAuxiliarCuenta, obtenerMayorCuenta, obtenerValidacionAuxiliar } from "@/lib/reportes";
 import { MayorTable } from "@/components/cierres/MayorTable";
 import { AuxiliarTable } from "@/components/cierres/AuxiliarTable";
 import { MayorAuxiliarTabs } from "@/components/cierres/MayorAuxiliarTabs";
+import { UploadValidacionAuxiliarForm } from "@/components/validacion/UploadValidacionAuxiliarForm";
+import { ValidacionAuxiliarCard } from "@/components/validacion/ValidacionAuxiliarCard";
 
 export default async function MayorCuentaPage({
   params,
@@ -19,7 +21,10 @@ export default async function MayorCuentaPage({
   const mayor = await obtenerMayorCuenta(cierreId, cuentaId);
   if (!mayor) notFound();
 
-  const auxiliar = mayor.tieneAuxiliar ? await obtenerAuxiliarCuenta(cierreId, cuentaId) : null;
+  const [auxiliar, validacionAuxiliar] = await Promise.all([
+    mayor.tieneAuxiliar ? obtenerAuxiliarCuenta(cierreId, cuentaId) : Promise.resolve(null),
+    mayor.tieneAuxiliar ? obtenerValidacionAuxiliar(cierreId, cuentaId) : Promise.resolve(null),
+  ]);
 
   return (
     <div className="space-y-4">
@@ -40,6 +45,20 @@ export default async function MayorCuentaPage({
       <MayorAuxiliarTabs
         mayor={<MayorTable mayor={mayor} />}
         auxiliar={auxiliar ? <AuxiliarTable auxiliar={auxiliar} /> : null}
+        validacion={
+          mayor.tieneAuxiliar ? (
+            <div className="space-y-4">
+              <UploadValidacionAuxiliarForm empresaId={empresaId} cierreId={cierreId} />
+              {validacionAuxiliar ? (
+                <ValidacionAuxiliarCard validacion={validacionAuxiliar} />
+              ) : (
+                <p className="text-sm text-neutral-500">
+                  Aún no has subido el reporte de iContador para esta cuenta.
+                </p>
+              )}
+            </div>
+          ) : null
+        }
       />
     </div>
   );

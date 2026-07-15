@@ -9,6 +9,7 @@ import {
   type Grupo,
   type SeccionPL,
 } from "./clasificacion";
+import type { FilaBalanceExterno, AuxiliarExternoParseado } from "./icontador-parser";
 
 export interface FilaBalance {
   cuentaId: string;
@@ -544,5 +545,192 @@ export async function obtenerAuxiliarCuenta(cierreId: string, cuentaId: string):
     totalHaber,
     saldoFinalDeudor: saldoTotal > 0 ? saldoTotal : 0,
     saldoFinalAcreedor: saldoTotal < 0 ? -saldoTotal : 0,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Validación contra los reportes que exporta iContador directamente (Balance
+// General y Facturas/Honorarios Pendientes de Pago), para detectar diferencias
+// entre lo que la aplicación calcula a partir del libro diario y lo que el
+// sistema contable de origen reporta.
+// ---------------------------------------------------------------------------
+
+export interface DiferenciaBalance {
+  codigo: string;
+  nombre: string;
+  debeInterno: number;
+  haberInterno: number;
+  debeExterno: number;
+  haberExterno: number;
+  diferenciaDebe: number;
+  diferenciaHaber: number;
+}
+
+export interface ValidacionBalance {
+  archivoOrigen: string | null;
+  fecha: Date;
+  totalCuentasArchivo: number;
+  totalCuentasComparadas: number;
+  diferencias: DiferenciaBalance[];
+  cuentasSoloEnIcontador: FilaBalanceExterno[];
+}
+
+export async function obtenerValidacionBalance(cierreId: string): Promise<ValidacionBalance | null> {
+  const validacion = await prisma.validacionExterna.findFirst({
+    where: { cierreId, tipo: "BALANCE" },
+    orderBy: { createdAt: "desc" },
+  });
+  if (!validacion) return null;
+
+  const filasExternas = validacion.datos as unknown as FilaBalanceExterno[];
+  const balanceInterno = await obtenerBalanceComprobacion(cierreId);
+  const porCodigo = new Map(balanceInterno.filas.filter((f) => f.codigo).map((f) => [f.codigo as string, f]));
+
+  const diferencias: DiferenciaBalance[] = [];
+  const cuentasSoloEnIcontador: FilaBalanceExterno[] = [];
+  let totalCuentasComparadas = 0;
+
+  for (const externa of filasExternas) {
+    const interna = porCodigo.get(externa.codigo);
+    if (!interna) {
+      if (Math.abs(externa.debitos) > TOLERANCIA || Math.abs(externa.creditos) > TOLERANCIA) {
+        cuentasSoloEnIcontador.push(externa);
+      }
+      continue;
+    }
+    totalCuentasComparadas++;
+    const diferenciaDebe = interna.debe - externa.debitos;
+    const diferenciaHaber = interna.haber - externa.creditos;
+    if (Math.abs(diferenciaDebe) > TOLERANCIA || Math.abs(diferenciaHaber) > TOLERANCIA) {
+      diferencias.push({
+        codigo: externa.codigo,
+        nombre: interna.nombre || externa.nombre,
+        debeInterno: interna.debe,
+        haberInterno: interna.haber,
+        debeExterno: externa.debitos,
+        haberExterno: externa.creditos,
+        diferenciaDebe,
+        diferenciaHaber,
+      });
+    }
+  }
+
+  diferencias.sort(
+    (a, b) =>
+      Math.abs(b.diferenciaDebe) + Math.abs(b.diferenciaHaber) - (Math.abs(a.diferenciaDebe) + Math.abs(a.diferenciaHaber))
+  );
+
+  return {
+    archivoOrigen: validacion.archivoOrigen,
+    fecha: validacion.createdAt,
+    totalCuentasArchivo: filasExternas.length,
+    totalCuentasComparadas,
+    diferencias,
+    cuentasSoloEnIcontador,
+  };
+}
+
+function normalizarEntidad(texto: string): string {
+  return texto
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, " ");
+}
+
+export interface DiferenciaAuxiliar {
+  entidad: string;
+  numero: string;
+  saldoInterno: number | null;
+  saldoExterno: number | null;
+}
+
+export interface ValidacionAuxiliar {
+  archivoOrigen: string | null;
+  fecha: Date;
+  cuentaCodigo: string;
+  cuentaNombre: string | null;
+  totalDocumentosArchivo: number;
+  diferencias: DiferenciaAuxiliar[];
+}
+
+// Compara, documento por documento, las facturas pendientes que calcula la
+// aplicación a partir del libro diario contra las que reporta el archivo de
+// iContador para esa misma cuenta. Como los dos reportes usan convenciones de
+// signo distintas entre sí (confirmado con datos reales: Proveedores y
+// Honorarios de iContador no comparten el mismo signo para un saldo acreedor),
+// la comparación se hace por magnitud (valor absoluto) en vez de por signo.
+export async function obtenerValidacionAuxiliar(cierreId: string, cuentaId: string): Promise<ValidacionAuxiliar | null> {
+  const cuenta = await prisma.cuenta.findUnique({ where: { id: cuentaId } });
+  if (!cuenta || !cuenta.codigo) return null;
+
+  const validacion = await prisma.validacionExterna.findFirst({
+    where: { cierreId, tipo: "AUXILIAR", cuentaCodigo: cuenta.codigo },
+    orderBy: { createdAt: "desc" },
+  });
+  if (!validacion) return null;
+
+  const externo = validacion.datos as unknown as AuxiliarExternoParseado;
+  const auxiliarInterno = await obtenerAuxiliarCuenta(cierreId, cuentaId);
+  if (!auxiliarInterno) return null;
+
+  interface Item {
+    entidad: string;
+    numero: string;
+    saldo: number;
+  }
+
+  const internoPorClave = new Map<string, Item>();
+  for (const entidad of auxiliarInterno.entidades) {
+    for (const factura of entidad.facturasPendientes) {
+      const numero = factura.numeroDocto?.trim() || "(sin número)";
+      const clave = `${normalizarEntidad(entidad.entidad)}|${normalizarEntidad(numero)}`;
+      internoPorClave.set(clave, { entidad: entidad.entidad, numero, saldo: factura.montoPendiente });
+    }
+  }
+
+  const externoPorClave = new Map<string, Item>();
+  for (const factura of externo.facturas) {
+    const clave = `${normalizarEntidad(factura.entidadNombre)}|${normalizarEntidad(factura.numero)}`;
+    externoPorClave.set(clave, { entidad: factura.entidadNombre, numero: factura.numero, saldo: factura.saldo });
+  }
+
+  const claves = new Set([...internoPorClave.keys(), ...externoPorClave.keys()]);
+  const diferencias: DiferenciaAuxiliar[] = [];
+
+  for (const clave of claves) {
+    const interno = internoPorClave.get(clave);
+    const ext = externoPorClave.get(clave);
+    const saldoInterno = interno ? Math.abs(interno.saldo) : null;
+    const saldoExterno = ext ? Math.abs(ext.saldo) : null;
+    if (saldoInterno !== null && saldoExterno !== null && Math.abs(saldoInterno - saldoExterno) <= TOLERANCIA) {
+      continue;
+    }
+    diferencias.push({
+      entidad: (interno ?? ext)!.entidad,
+      numero: (interno ?? ext)!.numero,
+      saldoInterno,
+      saldoExterno,
+    });
+  }
+
+  // Los documentos que aparecen en ambos lados pero con montos distintos suelen ser el
+  // problema más urgente de revisar; los que solo aparecen de un lado casi siempre se
+  // deben a que el reporte de iContador refleja pagos posteriores al cierre.
+  diferencias.sort((a, b) => {
+    const ambosA = a.saldoInterno !== null && a.saldoExterno !== null;
+    const ambosB = b.saldoInterno !== null && b.saldoExterno !== null;
+    if (ambosA !== ambosB) return ambosA ? -1 : 1;
+    return a.entidad.localeCompare(b.entidad) || a.numero.localeCompare(b.numero);
+  });
+
+  return {
+    archivoOrigen: validacion.archivoOrigen,
+    fecha: validacion.createdAt,
+    cuentaCodigo: cuenta.codigo,
+    cuentaNombre: validacion.cuentaNombre,
+    totalDocumentosArchivo: externo.facturas.length,
+    diferencias,
   };
 }
