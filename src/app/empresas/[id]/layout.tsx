@@ -24,6 +24,7 @@ export default async function EmpresaLayout({
     { href: `/empresas/${empresaId}/cierres`, label: "Cierres" },
     { href: `/empresas/${empresaId}/cuentas`, label: "Plan de cuentas" },
     { href: `/empresas/${empresaId}/miembros`, label: "Miembros" },
+    { href: `/empresas/${empresaId}/configuracion`, label: "Configuración" },
   ];
 
   return (

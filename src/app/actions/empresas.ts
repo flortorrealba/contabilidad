@@ -33,6 +33,31 @@ export async function createEmpresaAction(_prevState: ActionState, formData: For
   redirect(`/empresas/${empresa.id}/cierres`);
 }
 
+export async function updateEmpresaAction(
+  empresaId: string,
+  _prevState: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  const user = await requireUser();
+  await requireEmpresaAccess(user.id, empresaId);
+
+  const parsed = empresaSchema.safeParse({
+    nombre: formData.get("nombre"),
+    rut: formData.get("rut") || undefined,
+  });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
+  }
+
+  await prisma.empresa.update({
+    where: { id: empresaId },
+    data: { nombre: parsed.data.nombre, rut: parsed.data.rut || null },
+  });
+
+  revalidatePath(`/empresas/${empresaId}`, "layout");
+  return {};
+}
+
 const miembroSchema = z.object({
   email: z.email("Correo inválido"),
 });
