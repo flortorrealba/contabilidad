@@ -397,6 +397,87 @@ export async function obtenerMayorCuenta(cierreId: string, cuentaId: string): Pr
   };
 }
 
+export interface AplicacionFactura {
+  fecha: Date;
+  numeroDocto: string | null;
+  glosa: string | null;
+  monto: number;
+}
+
+export interface FacturaPendiente {
+  numeroDocto: string | null;
+  fecha: Date;
+  glosa: string | null;
+  montoOriginal: number;
+  montoPendiente: number;
+  aplicaciones: AplicacionFactura[];
+}
+
+// Los pagos, notas de crédito y regularizaciones casi siempre repiten el mismo
+// número de documento que la factura que están liquidando (ej: la factura
+// "F/68402" se paga con un asiento "PAGO FAE: 68402" que también trae
+// numeroDocto="68402"; una "NC/1878" se regulariza con un asiento que también
+// trae numeroDocto="1878"). Por eso, para saber qué facturas siguen pendientes,
+// se agrupan los movimientos por numeroDocto y se netea debe-haber dentro de
+// cada grupo: lo que no cuadra a cero es el saldo pendiente de ese documento
+// específico — esto es justamente lo que la planilla de la empresa no hace hoy
+// con las notas de crédito. Los movimientos sin numeroDocto no tienen con qué
+// agruparse, así que cada uno queda como su propia línea.
+function calcularFacturasPendientes(movimientos: MovimientoMayor[], esActivo: boolean): FacturaPendiente[] {
+  const grupos = new Map<string, MovimientoMayor[]>();
+  let sinDoctoIndice = 0;
+  for (const m of movimientos) {
+    const clave = m.numeroDocto?.trim() ? m.numeroDocto.trim() : `__sin_docto_${sinDoctoIndice++}`;
+    const lista = grupos.get(clave);
+    if (lista) lista.push(m);
+    else grupos.set(clave, [m]);
+  }
+
+  const resultado: FacturaPendiente[] = [];
+
+  for (const [clave, movs] of grupos) {
+    const totalInc = movs.reduce((s, m) => s + (esActivo ? m.debe : m.haber), 0);
+    const totalDec = movs.reduce((s, m) => s + (esActivo ? m.haber : m.debe), 0);
+    const pendiente = totalInc - totalDec;
+    if (Math.abs(pendiente) <= TOLERANCIA) continue;
+
+    // La "factura" del grupo es el movimiento con mayor monto creciente; si el
+    // grupo no tiene ningún movimiento creciente, no hay factura asociada en
+    // este cierre (ej: un pago que liquida un documento de un período anterior).
+    const factura = movs.reduce((mejor, m) => {
+      const incM = esActivo ? m.debe : m.haber;
+      const incMejor = esActivo ? mejor.debe : mejor.haber;
+      return incM > incMejor ? m : mejor;
+    }, movs[0]);
+    const tieneFactura = (esActivo ? factura.debe : factura.haber) > 0;
+
+    const aplicaciones: AplicacionFactura[] = movs
+      .filter((m) => m !== factura)
+      .map((m) => ({
+        fecha: m.fecha,
+        numeroDocto: m.numeroDocto,
+        glosa: m.glosa,
+        monto: esActivo ? m.haber - m.debe : m.debe - m.haber,
+      }));
+
+    resultado.push({
+      numeroDocto: clave.startsWith("__sin_docto_") ? null : clave,
+      fecha: factura.fecha,
+      glosa: tieneFactura
+        ? factura.glosa
+        : factura.glosa
+          ? `${factura.glosa} (sin factura asociada en este cierre)`
+          : "Sin factura asociada en este cierre",
+      montoOriginal: totalInc,
+      montoPendiente: pendiente,
+      aplicaciones,
+    });
+  }
+
+  resultado.sort((a, b) => a.fecha.getTime() - b.fecha.getTime());
+  return resultado;
+}
+
 export interface AuxiliarEntidad {
   entidad: string;
   movimientos: MovimientoMayor[];
@@ -404,6 +485,7 @@ export interface AuxiliarEntidad {
   totalHaber: number;
   saldoFinalDeudor: number;
   saldoFinalAcreedor: number;
+  facturasPendientes: FacturaPendiente[];
 }
 
 export interface AuxiliarCuenta {
@@ -434,10 +516,16 @@ export async function obtenerAuxiliarCuenta(cierreId: string, cuentaId: string):
     else porEntidad.set(clave, [a]);
   }
 
-  const entidades: AuxiliarEntidad[] = Array.from(porEntidad.entries()).map(([entidad, movs]) => ({
-    entidad,
-    ...construirMovimientos(movs),
-  }));
+  const esActivo = esGrupoActivo(CATEGORIA_META[cuenta.categoria as Categoria].grupo);
+
+  const entidades: AuxiliarEntidad[] = Array.from(porEntidad.entries()).map(([entidad, movs]) => {
+    const resumen = construirMovimientos(movs);
+    return {
+      entidad,
+      ...resumen,
+      facturasPendientes: calcularFacturasPendientes(resumen.movimientos, esActivo),
+    };
+  });
 
   entidades.sort(
     (a, b) =>
