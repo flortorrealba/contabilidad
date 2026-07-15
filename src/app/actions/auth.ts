@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { createSession, destroySession, hashPassword, verifyPassword } from "@/lib/auth";
+import { createSession, destroySession, hashPassword, verifyPassword, requireUser } from "@/lib/auth";
 
 export interface ActionState {
   error?: string;
@@ -64,4 +64,48 @@ export async function loginAction(_prevState: ActionState, formData: FormData): 
 export async function logoutAction() {
   await destroySession();
   redirect("/login");
+}
+
+const cambiarPasswordSchema = z
+  .object({
+    passwordActual: z.string().min(1, "Ingresa tu contraseña actual"),
+    passwordNueva: z.string().min(8, "La nueva contraseña debe tener al menos 8 caracteres"),
+    passwordConfirmacion: z.string().min(1, "Confirma tu nueva contraseña"),
+  })
+  .refine((data) => data.passwordNueva === data.passwordConfirmacion, {
+    message: "Las contraseñas nuevas no coinciden",
+    path: ["passwordConfirmacion"],
+  });
+
+export interface CambiarPasswordState {
+  error?: string;
+  ok?: boolean;
+}
+
+export async function cambiarPasswordAction(
+  _prevState: CambiarPasswordState,
+  formData: FormData
+): Promise<CambiarPasswordState> {
+  const user = await requireUser();
+
+  const parsed = cambiarPasswordSchema.safeParse({
+    passwordActual: formData.get("passwordActual"),
+    passwordNueva: formData.get("passwordNueva"),
+    passwordConfirmacion: formData.get("passwordConfirmacion"),
+  });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
+  }
+
+  const valida = await verifyPassword(parsed.data.passwordActual, user.passwordHash);
+  if (!valida) {
+    return { error: "Tu contraseña actual no es correcta" };
+  }
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { passwordHash: await hashPassword(parsed.data.passwordNueva) },
+  });
+
+  return { ok: true };
 }

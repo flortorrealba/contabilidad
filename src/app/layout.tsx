@@ -40,7 +40,9 @@ export default async function RootLayout({
             </Link>
             {user ? (
               <div className="flex items-center gap-4 text-sm">
-                <span className="text-neutral-600">{user.nombre}</span>
+                <Link href="/cuenta" className="text-neutral-600 hover:text-neutral-900 hover:underline">
+                  {user.nombre}
+                </Link>
                 <form action={logoutAction}>
                   <button type="submit" className="text-neutral-500 hover:text-neutral-900 hover:underline">
                     Cerrar sesión
