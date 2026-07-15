@@ -1,7 +1,16 @@
+import Link from "next/link";
 import { formatearMonto } from "@/lib/format";
 import type { CategoriaEFF, EstadoSituacionFinanciera, GrupoEFF } from "@/lib/reportes";
 
-function FilaCategoria({ categoria }: { categoria: CategoriaEFF }) {
+function FilaCategoria({
+  categoria,
+  empresaId,
+  cierreId,
+}: {
+  categoria: CategoriaEFF;
+  empresaId: string;
+  cierreId: string;
+}) {
   return (
     <div key={categoria.categoria}>
       <div className="flex justify-between bg-neutral-50 px-3 py-1.5 text-sm font-semibold text-neutral-900">
@@ -10,7 +19,12 @@ function FilaCategoria({ categoria }: { categoria: CategoriaEFF }) {
       </div>
       {categoria.lineas.map((linea) => (
         <div key={linea.cuentaId} className="flex justify-between px-3 py-1 pl-6 text-sm text-neutral-600">
-          <span>{linea.nombre}</span>
+          <Link
+            href={`/empresas/${empresaId}/cierres/${cierreId}/mayor/${linea.cuentaId}`}
+            className="hover:underline"
+          >
+            {linea.nombre}
+          </Link>
           <span className="tabular-nums">{formatearMonto(linea.monto)}</span>
         </div>
       ))}
@@ -18,7 +32,7 @@ function FilaCategoria({ categoria }: { categoria: CategoriaEFF }) {
   );
 }
 
-function Grupo({ grupo }: { grupo: GrupoEFF }) {
+function Grupo({ grupo, empresaId, cierreId }: { grupo: GrupoEFF; empresaId: string; cierreId: string }) {
   if (grupo.categorias.length === 0) return null;
   return (
     <div className="mb-4">
@@ -27,13 +41,21 @@ function Grupo({ grupo }: { grupo: GrupoEFF }) {
         <span className="tabular-nums">{formatearMonto(grupo.total)}</span>
       </div>
       {grupo.categorias.map((c) => (
-        <FilaCategoria key={c.categoria} categoria={c} />
+        <FilaCategoria key={c.categoria} categoria={c} empresaId={empresaId} cierreId={cierreId} />
       ))}
     </div>
   );
 }
 
-export function EstadoSituacionFinancieraTable({ eff }: { eff: EstadoSituacionFinanciera }) {
+export function EstadoSituacionFinancieraTable({
+  eff,
+  empresaId,
+  cierreId,
+}: {
+  eff: EstadoSituacionFinanciera;
+  empresaId: string;
+  cierreId: string;
+}) {
   const tieneDatos =
     eff.activoCorriente.categorias.length > 0 ||
     eff.activoNoCorriente.categorias.length > 0 ||
@@ -73,8 +95,8 @@ export function EstadoSituacionFinancieraTable({ eff }: { eff: EstadoSituacionFi
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div className="overflow-hidden rounded-md border border-neutral-200 bg-white">
           <div className="bg-neutral-900 px-3 py-2 text-sm font-bold text-white">ACTIVOS</div>
-          <Grupo grupo={eff.activoCorriente} />
-          <Grupo grupo={eff.activoNoCorriente} />
+          <Grupo grupo={eff.activoCorriente} empresaId={empresaId} cierreId={cierreId} />
+          <Grupo grupo={eff.activoNoCorriente} empresaId={empresaId} cierreId={cierreId} />
           <div className="flex justify-between border-t-2 border-neutral-900 px-3 py-2 text-sm font-bold text-neutral-900">
             <span>TOTAL ACTIVOS</span>
             <span className="tabular-nums">{formatearMonto(eff.totalActivos)}</span>
@@ -83,9 +105,9 @@ export function EstadoSituacionFinancieraTable({ eff }: { eff: EstadoSituacionFi
 
         <div className="overflow-hidden rounded-md border border-neutral-200 bg-white">
           <div className="bg-neutral-900 px-3 py-2 text-sm font-bold text-white">PATRIMONIO Y PASIVOS</div>
-          <Grupo grupo={eff.pasivoCorriente} />
-          <Grupo grupo={eff.pasivoNoCorriente} />
-          <Grupo grupo={eff.patrimonio} />
+          <Grupo grupo={eff.pasivoCorriente} empresaId={empresaId} cierreId={cierreId} />
+          <Grupo grupo={eff.pasivoNoCorriente} empresaId={empresaId} cierreId={cierreId} />
+          <Grupo grupo={eff.patrimonio} empresaId={empresaId} cierreId={cierreId} />
           <div className="flex justify-between border-t-2 border-neutral-900 px-3 py-2 text-sm font-bold text-neutral-900">
             <span>TOTAL PATRIMONIO Y PASIVOS</span>
             <span className="tabular-nums">{formatearMonto(eff.totalPatrimonioYPasivos)}</span>

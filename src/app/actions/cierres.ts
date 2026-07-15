@@ -98,6 +98,7 @@ export async function uploadCierreAction(
           tipo: a.tipo,
           numeroVoucher: a.numeroVoucher,
           numeroDocto: a.numeroDocto,
+          codigoAnalisis: a.codigoAnalisis,
           glosa: a.glosa,
           debe: a.debe,
           haber: a.haber,

@@ -76,20 +76,22 @@ model Cierre {
 }
 
 model Asiento {
-  id            String   @id @default(cuid())
-  cierreId      String
-  cuentaId      String
-  fecha         DateTime
-  mes           Int
-  tipo          String?
-  numeroVoucher String?
-  numeroDocto   String?
-  glosa         String?
-  debe          Float    @default(0)
-  haber         Float    @default(0)
-  cierre        Cierre   @relation(fields: [cierreId], references: [id], onDelete: Cascade)
-  cuenta        Cuenta   @relation(fields: [cuentaId], references: [id])
+  id             String   @id @default(cuid())
+  cierreId       String
+  cuentaId       String
+  fecha          DateTime
+  mes            Int
+  tipo           String?
+  numeroVoucher  String?
+  numeroDocto    String?
+  codigoAnalisis String?
+  glosa          String?
+  debe           Float    @default(0)
+  haber          Float    @default(0)
+  cierre         Cierre   @relation(fields: [cierreId], references: [id], onDelete: Cascade)
+  cuenta         Cuenta   @relation(fields: [cuentaId], references: [id])
 
   @@index([cierreId])
   @@index([cuentaId])
+  @@index([cuentaId, codigoAnalisis])
 }

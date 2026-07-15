@@ -8,6 +8,7 @@ export interface AsientoParseado {
   cuentaCodigo: string | null;
   cuentaNombre: string;
   numeroDocto: string | null;
+  codigoAnalisis: string | null;
   glosa: string | null;
   debe: number;
   haber: number;
@@ -33,6 +34,9 @@ const ALIAS_COLUMNAS: Record<string, keyof ColumnMap> = {
   "N DOCTO.": "numeroDocto",
   "NUMERO DOCTO": "numeroDocto",
   "NRO DOCTO": "numeroDocto",
+  "CODIGO ANALISIS": "codigoAnalisis",
+  "COD ANALISIS": "codigoAnalisis",
+  ANALISIS: "codigoAnalisis",
   GLOSA: "glosa",
   DETALLE: "glosa",
   DESCRIPCION: "glosa",
@@ -47,6 +51,7 @@ interface ColumnMap {
   cuentaCodigo?: number;
   cuentaNombre?: number;
   numeroDocto?: number;
+  codigoAnalisis?: number;
   glosa?: number;
   debe?: number;
   haber?: number;
@@ -195,6 +200,7 @@ function parseHoja(nombreHoja: string, matriz: unknown[][]): ResultadoParseo | n
       cuentaCodigo: cuentaCodigoRaw,
       cuentaNombre: cuentaNombre.toUpperCase(),
       numeroDocto: textoONull(celda(fila, columnas.numeroDocto)),
+      codigoAnalisis: textoONull(celda(fila, columnas.codigoAnalisis)),
       glosa: textoONull(celda(fila, columnas.glosa)),
       debe,
       haber,

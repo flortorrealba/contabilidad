@@ -311,3 +311,150 @@ export async function obtenerEstadoSituacionFinanciera(cierreId: string): Promis
     cuadra: Math.abs(diferencia) < TOLERANCIA,
   };
 }
+
+export interface MovimientoMayor {
+  id: string;
+  fecha: Date;
+  tipo: string | null;
+  numeroVoucher: string | null;
+  numeroDocto: string | null;
+  codigoAnalisis: string | null;
+  glosa: string | null;
+  debe: number;
+  haber: number;
+  saldoDeudor: number;
+  saldoAcreedor: number;
+}
+
+interface CuentaResumen {
+  id: string;
+  codigo: string | null;
+  nombre: string;
+  categoria: string;
+}
+
+export interface MayorCuenta {
+  cuenta: CuentaResumen;
+  movimientos: MovimientoMayor[];
+  totalDebe: number;
+  totalHaber: number;
+  saldoFinalDeudor: number;
+  saldoFinalAcreedor: number;
+  tieneAuxiliar: boolean;
+}
+
+function construirMovimientos(
+  asientos: { id: string; fecha: Date; tipo: string | null; numeroVoucher: string | null; numeroDocto: string | null; codigoAnalisis: string | null; glosa: string | null; debe: number; haber: number }[]
+) {
+  let saldo = 0;
+  const movimientos: MovimientoMayor[] = asientos.map((a) => {
+    saldo += a.debe - a.haber;
+    return {
+      id: a.id,
+      fecha: a.fecha,
+      tipo: a.tipo,
+      numeroVoucher: a.numeroVoucher,
+      numeroDocto: a.numeroDocto,
+      codigoAnalisis: a.codigoAnalisis,
+      glosa: a.glosa,
+      debe: a.debe,
+      haber: a.haber,
+      saldoDeudor: saldo > 0 ? saldo : 0,
+      saldoAcreedor: saldo < 0 ? -saldo : 0,
+    };
+  });
+  const totalDebe = asientos.reduce((s, a) => s + a.debe, 0);
+  const totalHaber = asientos.reduce((s, a) => s + a.haber, 0);
+  return {
+    movimientos,
+    totalDebe,
+    totalHaber,
+    saldoFinalDeudor: saldo > 0 ? saldo : 0,
+    saldoFinalAcreedor: saldo < 0 ? -saldo : 0,
+  };
+}
+
+export async function obtenerMayorCuenta(cierreId: string, cuentaId: string): Promise<MayorCuenta | null> {
+  const cuenta = await prisma.cuenta.findUnique({ where: { id: cuentaId } });
+  if (!cuenta) return null;
+
+  const asientos = await prisma.asiento.findMany({
+    where: { cierreId, cuentaId },
+    orderBy: [{ fecha: "asc" }, { numeroVoucher: "asc" }],
+  });
+
+  const { movimientos, totalDebe, totalHaber, saldoFinalDeudor, saldoFinalAcreedor } =
+    construirMovimientos(asientos);
+
+  return {
+    cuenta: { id: cuenta.id, codigo: cuenta.codigo, nombre: cuenta.nombre, categoria: cuenta.categoria },
+    movimientos,
+    totalDebe,
+    totalHaber,
+    saldoFinalDeudor,
+    saldoFinalAcreedor,
+    tieneAuxiliar: asientos.some((a) => a.codigoAnalisis && a.codigoAnalisis.trim() !== ""),
+  };
+}
+
+export interface AuxiliarEntidad {
+  entidad: string;
+  movimientos: MovimientoMayor[];
+  totalDebe: number;
+  totalHaber: number;
+  saldoFinalDeudor: number;
+  saldoFinalAcreedor: number;
+}
+
+export interface AuxiliarCuenta {
+  cuenta: CuentaResumen;
+  entidades: AuxiliarEntidad[];
+  totalDebe: number;
+  totalHaber: number;
+  saldoFinalDeudor: number;
+  saldoFinalAcreedor: number;
+}
+
+const SIN_IDENTIFICAR = "Sin identificar";
+
+export async function obtenerAuxiliarCuenta(cierreId: string, cuentaId: string): Promise<AuxiliarCuenta | null> {
+  const cuenta = await prisma.cuenta.findUnique({ where: { id: cuentaId } });
+  if (!cuenta) return null;
+
+  const asientos = await prisma.asiento.findMany({
+    where: { cierreId, cuentaId },
+    orderBy: [{ fecha: "asc" }, { numeroVoucher: "asc" }],
+  });
+
+  const porEntidad = new Map<string, typeof asientos>();
+  for (const a of asientos) {
+    const clave = a.codigoAnalisis?.trim() || SIN_IDENTIFICAR;
+    const lista = porEntidad.get(clave);
+    if (lista) lista.push(a);
+    else porEntidad.set(clave, [a]);
+  }
+
+  const entidades: AuxiliarEntidad[] = Array.from(porEntidad.entries()).map(([entidad, movs]) => ({
+    entidad,
+    ...construirMovimientos(movs),
+  }));
+
+  entidades.sort(
+    (a, b) =>
+      b.saldoFinalDeudor + b.saldoFinalAcreedor - (a.saldoFinalDeudor + a.saldoFinalAcreedor) ||
+      a.entidad.localeCompare(b.entidad)
+  );
+
+  const totalDebe = asientos.reduce((s, a) => s + a.debe, 0);
+  const totalHaber = asientos.reduce((s, a) => s + a.haber, 0);
+  const saldoTotal = totalDebe - totalHaber;
+
+  return {
+    cuenta: { id: cuenta.id, codigo: cuenta.codigo, nombre: cuenta.nombre, categoria: cuenta.categoria },
+    entidades,
+    totalDebe,
+    totalHaber,
+    saldoFinalDeudor: saldoTotal > 0 ? saldoTotal : 0,
+    saldoFinalAcreedor: saldoTotal < 0 ? -saldoTotal : 0,
+  };
+}

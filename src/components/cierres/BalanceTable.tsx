@@ -1,7 +1,16 @@
+import Link from "next/link";
 import { formatearMonto } from "@/lib/format";
 import type { BalanceComprobacion } from "@/lib/reportes";
 
-export function BalanceTable({ balance }: { balance: BalanceComprobacion }) {
+export function BalanceTable({
+  balance,
+  empresaId,
+  cierreId,
+}: {
+  balance: BalanceComprobacion;
+  empresaId: string;
+  cierreId: string;
+}) {
   return (
     <div className="mt-4 space-y-4">
       <div
@@ -38,7 +47,14 @@ export function BalanceTable({ balance }: { balance: BalanceComprobacion }) {
             {balance.filas.map((fila) => (
               <tr key={fila.cuentaId}>
                 <td className="px-4 py-2 text-neutral-500">{fila.codigo ?? "—"}</td>
-                <td className="px-4 py-2 font-medium text-neutral-900">{fila.nombre}</td>
+                <td className="px-4 py-2 font-medium text-neutral-900">
+                  <Link
+                    href={`/empresas/${empresaId}/cierres/${cierreId}/mayor/${fila.cuentaId}`}
+                    className="hover:underline"
+                  >
+                    {fila.nombre}
+                  </Link>
+                </td>
                 <td className="px-4 py-2 text-right tabular-nums text-neutral-700">{formatearMonto(fila.debe)}</td>
                 <td className="px-4 py-2 text-right tabular-nums text-neutral-700">{formatearMonto(fila.haber)}</td>
                 <td className="px-4 py-2 text-right tabular-nums text-neutral-700">

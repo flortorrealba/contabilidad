@@ -53,8 +53,8 @@ export default async function CierreDetallePage({
 
       <ReportTabs
         resultados={<EstadoResultadosTable estado={estadoResultados} />}
-        eff={<EstadoSituacionFinancieraTable eff={eff} />}
-        balance={<BalanceTable balance={balance} />}
+        eff={<EstadoSituacionFinancieraTable eff={eff} empresaId={empresaId} cierreId={cierreId} />}
+        balance={<BalanceTable balance={balance} empresaId={empresaId} cierreId={cierreId} />}
       />
     </div>
   );
