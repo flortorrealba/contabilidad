@@ -27,14 +27,11 @@ export async function updateCuentaCategoriaAction(formData: FormData) {
   revalidatePath(`/empresas/${empresaId}/cuentas`);
 }
 
-// Reclasifica automáticamente las cuentas "Sin clasificar" usando el diccionario
-// actual de clasificación por defecto. Nunca toca cuentas que ya tengan una
-// categoría asignada (manual o automáticamente en una subida anterior).
-export async function reclasificarAutomaticamenteAction(formData: FormData) {
-  const user = await requireUser();
-  const empresaId = String(formData.get("empresaId"));
-  await requireEmpresaAccess(user.id, empresaId);
-
+// Reclasifica automáticamente las cuentas "Sin clasificar" de una empresa usando el
+// diccionario actual de clasificación por defecto. Nunca toca cuentas que ya tengan
+// una categoría asignada (manual o automáticamente en una subida anterior). Se usa
+// tanto desde el botón manual como automáticamente cada vez que se sube un cierre.
+export async function reclasificarCuentasSinClasificar(empresaId: string) {
   const sinClasificar = await prisma.cuenta.findMany({
     where: { empresaId, categoria: "SIN_CLASIFICAR" },
   });
@@ -48,6 +45,16 @@ export async function reclasificarAutomaticamenteAction(formData: FormData) {
     }
   }
 
-  revalidatePath(`/empresas/${empresaId}/cuentas`);
   return { actualizadas, revisadas: sinClasificar.length };
+}
+
+export async function reclasificarAutomaticamenteAction(formData: FormData) {
+  const user = await requireUser();
+  const empresaId = String(formData.get("empresaId"));
+  await requireEmpresaAccess(user.id, empresaId);
+
+  const resultado = await reclasificarCuentasSinClasificar(empresaId);
+
+  revalidatePath(`/empresas/${empresaId}/cuentas`);
+  return resultado;
 }

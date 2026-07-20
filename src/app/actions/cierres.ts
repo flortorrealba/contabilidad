@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { requireUser, requireEmpresaAccess } from "@/lib/auth";
 import { parseLibroDiario } from "@/lib/libro-diario-parser";
 import { sugerirCategoria } from "@/lib/clasificacion-default";
+import { reclasificarCuentasSinClasificar } from "./cuentas";
 import type { ActionState } from "./auth";
 
 const TOLERANCIA = 1;
@@ -105,6 +106,11 @@ export async function uploadCierreAction(
         })),
       });
     }
+
+    // Cuentas creadas antes de que existiera la clasificación automática (o dejadas
+    // "Sin clasificar" manualmente) se reintentan clasificar en cada subida, para que
+    // el usuario no tenga que acordarse de apretar "Reclasificar" a mano.
+    await reclasificarCuentasSinClasificar(empresaId);
   } catch (error) {
     return { error: error instanceof Error ? error.message : "No se pudo procesar el archivo" };
   }
