@@ -1,9 +1,9 @@
-import type { Categoria } from "./clasificacion";
+import { CATEGORIA_META, type Categoria, type Grupo } from "./clasificacion";
 
 // Clasificación por defecto de cuentas, basada en la estructura típica de un libro
 // diario tributario chileno (Balance clasificado + Estado de Resultados). Se usa
-// para sugerir automáticamente la categoría al detectar una cuenta nueva por
-// nombre; el usuario siempre puede reclasificarla manualmente en el Plan de Cuentas.
+// para sugerir automáticamente la categoría al detectar una cuenta nueva; el
+// usuario siempre puede reclasificarla manualmente en el Plan de Cuentas.
 export const CLASIFICACION_DEFAULT: Record<string, Categoria> = {
   // --- Activos corrientes ---
   "CAJA": "EFECTIVO_EQUIVALENTE",
@@ -142,6 +142,115 @@ const CLASIFICACION_NORMALIZADA: Record<string, Categoria> = Object.fromEntries(
   Object.entries(CLASIFICACION_DEFAULT).map(([nombre, categoria]) => [normalizarNombre(nombre), categoria])
 );
 
-export function sugerirCategoria(nombreCuenta: string): Categoria {
-  return CLASIFICACION_NORMALIZADA[normalizarNombre(nombreCuenta)] ?? "SIN_CLASIFICAR";
+// Grupo "amplio" (Activo/Pasivo/Patrimonio/Resultado) de cada categoría, y del
+// primer dígito de un código de cuenta — el plan de cuentas chileno que exportan
+// iContador y software similar es consistente entre empresas: 1xxxxx = Activo,
+// 2xxxxx = Pasivo, 3xxxxx = Patrimonio, 4xxxxx/5xxxxx = Resultado. Se usa para
+// evitar que una palabra clave "se escape" a la categoría equivocada — por
+// ejemplo, "GASTOS VARIOS VEHÍCULOS" (código 402xxx, un gasto) no debe
+// clasificarse como Propiedades, planta y equipo solo porque menciona
+// "vehículo".
+type GrupoAmplio = "ACTIVO" | "PASIVO" | "PATRIMONIO" | "RESULTADO";
+
+function grupoAmplio(grupo: Grupo): GrupoAmplio {
+  if (grupo === "ACTIVO_CORRIENTE" || grupo === "ACTIVO_NO_CORRIENTE") return "ACTIVO";
+  if (grupo === "PASIVO_CORRIENTE" || grupo === "PASIVO_NO_CORRIENTE") return "PASIVO";
+  if (grupo === "PATRIMONIO") return "PATRIMONIO";
+  return "RESULTADO";
+}
+
+const GRUPO_AMPLIO_POR_PRIMER_DIGITO: Record<string, GrupoAmplio> = {
+  "1": "ACTIVO",
+  "2": "PASIVO",
+  "3": "PATRIMONIO",
+  "4": "RESULTADO",
+  "5": "RESULTADO",
+};
+
+// Reglas por palabra clave: se evalúan en orden y se usa la primera que calce,
+// restringida al grupo amplio que sugiere el código de cuenta (si se conoce).
+const REGLAS_PALABRA_CLAVE: [RegExp, Categoria][] = [
+  [/^(CAJA( CHICA)?|BANCOS?( .*)?|.*WALLET|INVERSION EN FONDOS? MUTUOS?|DIVISAS?)$/, "EFECTIVO_EQUIVALENTE"],
+  [/\bANTICIPO DE CLIENTES?\b/, "OTROS_PASIVOS_NO_FINANCIEROS_CORRIENTES"],
+  [
+    /\bIVA (CREDITO|CRED)\b|^REMANENTE.*IVA\b|\bPPM\b|PAGOS? PROVISIONAL|\bANTICIPO\b|\bPRESTAMOS? AL PERSONAL\b|IMPUESTO POR RECUPERAR|GASTOS? PAGADOS? POR ANTICIPADO/,
+    "OTROS_ACTIVOS_NO_FINANCIEROS_CORRIENTES",
+  ],
+  [/\bCLIENTES?\b|DEUDORES|CUENTAS? POR COBRAR(?!.*RELACIONAD)/, "DEUDORES_COMERCIALES"],
+  [/CUENTAS? POR COBRAR.*RELACIONAD|POR COBRAR.*(SOCIO|ACCIONISTA|EMPRESA RELACIONADA)/, "CUENTAS_POR_COBRAR_RELACIONADAS"],
+  [/EXISTENCIA|INVENTARIO|MERCADERIA/, "INVENTARIOS_CORRIENTES"],
+  [/GARANT[IÍ]A/, "OTROS_ACTIVOS_NO_FINANCIEROS_CORRIENTES"],
+  [
+    /MUEBLES|MAQUINARIA|EQUIPOS? COMPUTACIONAL|VEHICULO|CONSTRUCCION|ACTIVO FIJO|SOFTWARE|DERECHOS? \w+|DEP\.? ?ACUM/,
+    "PROPIEDADES_PLANTA_EQUIPO",
+  ],
+  [/TARJETA DE CREDITO|\bLEASING\b|IVA D[EÉ]BITO/, "OTROS_PASIVOS_FINANCIEROS_CORRIENTES"],
+  [/CUENTA.*POR PAGAR.*RELACIONAD|CTA\.? ?CTE\.? (POR PAGAR|INVERSIONES)|^MUTUO\b|\bMUTUO\b/, "CUENTAS_POR_PAGAR_RELACIONADAS"],
+  [
+    /PROVEEDOR|HONORARIOS POR PAGAR|REMUNERACION|SUELDO.*PAGAR|FINIQUITOS? POR PAGAR|PROPINA|IMPUESTO|IVA POSTERGADO|IMPOSICION|PREVISION|RETENCION|CUENTAS? POR PAGAR/,
+    "OTROS_PASIVOS_NO_FINANCIEROS_CORRIENTES",
+  ],
+  [/\bCAPITAL\b|\bRETIROS?\b/, "CAPITAL_EMITIDO"],
+  [/RESULTADO ACUMULADO|P[EÉ]RDIDAS? ACUMULADAS?|UTILIDADES? ACUMULADAS?/, "GANANCIAS_PERDIDAS_ACUMULADAS"],
+  [/\bVENTAS?\b|INGRESOS? POR/, "INGRESOS"],
+  [/COSTO DE VENTAS?|DETERGENTE|INSUMOS Y MATERIALES|MANTENIMIENTO A EQUIPOS/, "COSTO_VENTAS"],
+  [/DIFERENCIA DE CAMBIO|REAJUSTES?/, "OTRAS_GANANCIAS_PERDIDAS"],
+  [/GASTOS? BANCARIOS?|COMISIONES? TRANSBANK|MULTAS? E? ?INTERESES/, "COSTOS_FINANCIEROS"],
+  [/IMPUESTO A LAS GANANCIAS|IMPUESTO RENTA/, "IMPUESTO_GANANCIAS"],
+  [
+    /SUELDO|GRATIFICACION|HORAS EXTRAS|MOVILIZACION|COLACION|BONOS?|APORTE PATRONAL|INDEMNIZACION|HONORARIOS|ARTICULOS|PATENTE|MARKETING|REPARACION|MANTENCION|LEGALES|NOTARIAL|SEGUROS?|ARRIENDO|GASTOS?|PACKAGING|UNIFORMES?|COMISION|TELEFON|INTERNET|LUZ,? ?AGUA|COMBUSTIBLE|PUBLICIDAD|PEAJES|SUSCRIPCION|FOTOCOPIADO|SISTEMA|SOFTWARE|PLATAFORMA|TRANSPORTE|ENCOMIENDA/,
+    "GASTOS_ADMIN_VENTAS",
+  ],
+];
+
+// Última red de seguridad: clasificar solo por el prefijo de 3 dígitos del
+// código de cuenta, cuando ni el nombre exacto ni ninguna palabra clave calzó.
+const CATEGORIA_POR_PREFIJO_CODIGO: Record<string, Categoria> = {
+  "101": "EFECTIVO_EQUIVALENTE",
+  "102": "EFECTIVO_EQUIVALENTE",
+  "103": "OTROS_ACTIVOS_NO_FINANCIEROS_CORRIENTES",
+  "104": "DEUDORES_COMERCIALES",
+  "108": "DEUDORES_COMERCIALES",
+  "109": "OTROS_ACTIVOS_NO_FINANCIEROS_CORRIENTES",
+  "111": "OTROS_ACTIVOS_NO_FINANCIEROS_CORRIENTES",
+  "115": "PROPIEDADES_PLANTA_EQUIPO",
+  "116": "PROPIEDADES_PLANTA_EQUIPO",
+  "117": "OTROS_ACTIVOS_NO_CORRIENTES",
+  "202": "OTROS_PASIVOS_FINANCIEROS_CORRIENTES",
+  "203": "CUENTAS_POR_PAGAR_RELACIONADAS",
+  "207": "OTROS_PASIVOS_NO_FINANCIEROS_CORRIENTES",
+  "301": "CAPITAL_EMITIDO",
+  "303": "GANANCIAS_PERDIDAS_ACUMULADAS",
+  "401": "COSTO_VENTAS",
+  "402": "GASTOS_ADMIN_VENTAS",
+  "403": "OTRAS_GANANCIAS_PERDIDAS",
+  "404": "GASTOS_ADMIN_VENTAS",
+  "405": "COSTOS_FINANCIEROS",
+  "408": "GASTOS_ADMIN_VENTAS",
+  "501": "INGRESOS",
+  "502": "OTRAS_GANANCIAS_PERDIDAS",
+  "503": "OTRAS_GANANCIAS_PERDIDAS",
+};
+
+export function sugerirCategoria(nombreCuenta: string, codigoCuenta?: string | null): Categoria {
+  const nombreNormalizado = normalizarNombre(nombreCuenta);
+
+  const exacta = CLASIFICACION_NORMALIZADA[nombreNormalizado];
+  if (exacta) return exacta;
+
+  const primerDigito = codigoCuenta?.trim()?.[0];
+  const grupoEsperado = primerDigito ? GRUPO_AMPLIO_POR_PRIMER_DIGITO[primerDigito] : undefined;
+
+  for (const [patron, categoria] of REGLAS_PALABRA_CLAVE) {
+    if (!patron.test(nombreNormalizado)) continue;
+    if (grupoEsperado && grupoAmplio(CATEGORIA_META[categoria].grupo) !== grupoEsperado) continue;
+    return categoria;
+  }
+
+  const prefijo = codigoCuenta?.trim()?.slice(0, 3);
+  if (prefijo && CATEGORIA_POR_PREFIJO_CODIGO[prefijo]) {
+    return CATEGORIA_POR_PREFIJO_CODIGO[prefijo];
+  }
+
+  return "SIN_CLASIFICAR";
 }

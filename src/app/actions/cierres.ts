@@ -53,7 +53,7 @@ export async function uploadCierreAction(
           empresaId,
           nombre,
           codigo: codigoPorNombre.get(nombre) ?? null,
-          categoria: sugerirCategoria(nombre),
+          categoria: sugerirCategoria(nombre, codigoPorNombre.get(nombre)),
         })),
       });
       const creadas = await prisma.cuenta.findMany({ where: { empresaId, nombre: { in: nombresNuevos } } });

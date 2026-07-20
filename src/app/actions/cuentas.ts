@@ -38,7 +38,7 @@ export async function reclasificarCuentasSinClasificar(empresaId: string) {
 
   let actualizadas = 0;
   for (const cuenta of sinClasificar) {
-    const sugerida = sugerirCategoria(cuenta.nombre);
+    const sugerida = sugerirCategoria(cuenta.nombre, cuenta.codigo);
     if (sugerida !== "SIN_CLASIFICAR") {
       await prisma.cuenta.update({ where: { id: cuenta.id }, data: { categoria: sugerida } });
       actualizadas++;
