@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { updateCuentaCategoriaAction } from "@/app/actions/cuentas";
 import { CATEGORIAS_BALANCE, CATEGORIAS_RESULTADO, CATEGORIA_META, GRUPO_LABEL, GRUPOS } from "@/lib/clasificacion";
 
@@ -15,21 +15,35 @@ export function CuentaCategoriaSelect({
   cuentaId: string;
   categoria: string;
 }) {
-  const formRef = useRef<HTMLFormElement>(null);
+  const [valor, setValor] = useState(categoria);
+  const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
+  function onChange(nuevaCategoria: string) {
+    const anterior = valor;
+    setValor(nuevaCategoria);
+    setError(null);
+    startTransition(async () => {
+      const formData = new FormData();
+      formData.set("empresaId", empresaId);
+      formData.set("cuentaId", cuentaId);
+      formData.set("categoria", nuevaCategoria);
+      try {
+        await updateCuentaCategoriaAction(formData);
+      } catch (e) {
+        setValor(anterior);
+        setError(e instanceof Error ? e.message : "No se pudo guardar el cambio");
+      }
+    });
+  }
+
   return (
-    <form
-      ref={formRef}
-      action={(formData) => startTransition(() => updateCuentaCategoriaAction(formData))}
-    >
-      <input type="hidden" name="empresaId" value={empresaId} />
-      <input type="hidden" name="cuentaId" value={cuentaId} />
+    <div>
       <select
         name="categoria"
-        defaultValue={categoria}
+        value={valor}
         disabled={pending}
-        onChange={() => formRef.current?.requestSubmit()}
+        onChange={(e) => onChange(e.target.value)}
         className="w-full rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-sm focus:border-neutral-500 focus:outline-none disabled:opacity-50"
       >
         <option value="SIN_CLASIFICAR">Sin clasificar</option>
@@ -54,6 +68,7 @@ export function CuentaCategoriaSelect({
           ))}
         </optgroup>
       </select>
-    </form>
+      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+    </div>
   );
 }
