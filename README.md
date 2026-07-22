@@ -43,9 +43,11 @@ npm run dev
 ```
 
 Abre [http://localhost:3000](http://localhost:3000), crea una cuenta, crea una
-empresa y sube el libro diario (columnas mínimas: Fecha, Cuenta, Debe, Haber).
-Necesitas una base de datos PostgreSQL accesible (local o gratuita en
-[neon.tech](https://neon.tech), por ejemplo).
+empresa y sube el libro diario (columnas mínimas: Fecha, Cuenta, Debe, Haber)
+o el Libro Mayor Tributario Jornalizador que exporta iContador (hoja
+"Mayores" con los movimientos agrupados por cuenta). Necesitas una base de
+datos PostgreSQL accesible (local o gratuita en [neon.tech](https://neon.tech),
+por ejemplo).
 
 ## Cómo funciona
 

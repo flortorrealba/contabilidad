@@ -23,7 +23,7 @@ export async function uploadCierreAction(
   const nombreCierre = formData.get("nombre");
 
   if (!(archivo instanceof File) || archivo.size === 0) {
-    return { error: "Debes adjuntar un archivo Excel (.xlsx, .xlsm) o CSV con el libro diario" };
+    return { error: "Debes adjuntar un archivo Excel (.xlsx, .xlsm) o CSV con el libro diario o el libro mayor" };
   }
 
   let cierreId: string;

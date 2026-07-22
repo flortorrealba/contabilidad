@@ -26,7 +26,7 @@ export function UploadCierreForm({ empresaId }: { empresaId: string }) {
       </div>
       <div>
         <label htmlFor="archivo" className="block text-sm font-medium text-neutral-700">
-          Libro diario (.xlsx, .xlsm o .csv)
+          Libro diario o Libro Mayor (.xlsx, .xlsm o .csv)
         </label>
         <input
           id="archivo"
@@ -37,7 +37,9 @@ export function UploadCierreForm({ empresaId }: { empresaId: string }) {
           className="mt-1 block w-full max-w-md text-sm text-neutral-600 file:mr-3 file:rounded-md file:border-0 file:bg-neutral-900 file:px-3 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-neutral-700"
         />
         <p className="mt-1 text-xs text-neutral-500">
-          Debe incluir columnas de Fecha, Cuenta, Debe y Haber (como el libro diario tributario).
+          Acepta el libro diario (columnas de Fecha, Cuenta, Debe y Haber) o el Libro Mayor
+          Tributario Jornalizador que exporta iContador (una hoja &quot;Mayores&quot; con los
+          movimientos agrupados por cuenta).
         </p>
       </div>
       {state.error && <p className="text-sm text-red-600">{state.error}</p>}
