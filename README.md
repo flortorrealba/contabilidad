@@ -1,9 +1,12 @@
-# Contabilidad — Libro Diario → Estado de Resultados
+# Cierre Contable
 
-Aplicación web para subir un libro diario contable (Excel o CSV), validar que la
-contabilidad cuadre (Debe = Haber) y generar automáticamente el Balance de
-Comprobación y el Estado de Resultados (P&L) por periodo. Soporta múltiples
-empresas y usuarios, y guarda cada cierre subido.
+Aplicación web para subir el Mayor de un cierre contable (libro diario o Libro
+Mayor, en Excel o CSV), validar que cuadre (Debe = Haber) y contrastarlo contra
+el Balance y los Auxiliares de clientes y proveedores que exporta el sistema
+contable, para detectar diferencias cuenta por cuenta y documento por
+documento. De paso, también genera el Balance de Comprobación y el Estado de
+Resultados (P&L) por periodo. Soporta múltiples empresas y usuarios, y guarda
+cada cierre subido.
 
 ## Stack
 

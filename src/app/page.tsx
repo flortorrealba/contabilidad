@@ -8,10 +8,11 @@ export default async function HomePage() {
 
   return (
     <div className="mx-auto max-w-2xl text-center">
-      <h1 className="text-3xl font-bold text-neutral-900">Libro Diario → Estado de Resultados</h1>
+      <h1 className="text-3xl font-bold text-neutral-900">Cierre Contable</h1>
       <p className="mt-4 text-neutral-600">
-        Sube tu libro diario en Excel o CSV, valida que la contabilidad cuadre (Debe = Haber) y obtén
-        el Balance de Comprobación y el Estado de Resultados por periodo, para una o varias empresas.
+        Sube el Mayor de tu cierre (libro diario o Libro Mayor) en Excel o CSV, valida que cuadre
+        (Debe = Haber) y contrasta las cuentas contra el Balance y los Auxiliares de clientes y
+        proveedores que exporta tu sistema contable, para una o varias empresas.
       </p>
       <div className="mt-8 flex justify-center gap-4">
         <Link href="/registro" className="rounded-md bg-neutral-900 px-5 py-2.5 text-white hover:bg-neutral-700">

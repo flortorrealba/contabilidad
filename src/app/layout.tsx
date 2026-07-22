@@ -16,8 +16,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Contabilidad | Libro Diario y Estado de Resultados",
-  description: "Sube tu libro diario, cuadra la contabilidad y genera el Estado de Resultados.",
+  title: "Cierre Contable | Cuadra Mayor, Balance y Auxiliares",
+  description:
+    "Sube el Mayor de tu cierre contable y valídalo contra el Balance y los Auxiliares de clientes y proveedores.",
 };
 
 export default async function RootLayout({
@@ -36,7 +37,7 @@ export default async function RootLayout({
         <header className="border-b border-neutral-200 bg-white">
           <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
             <Link href={user ? "/empresas" : "/"} className="font-semibold text-neutral-900">
-              📒 Contabilidad
+              📒 Cierre Contable
             </Link>
             {user ? (
               <div className="flex items-center gap-4 text-sm">
