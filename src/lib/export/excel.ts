@@ -1,44 +1,68 @@
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import type { BalanceComprobacion, EstadoResultados, EstadoSituacionFinanciera, GrupoEFF } from "@/lib/reportes";
 import { NOMBRES_MESES } from "@/lib/format";
 
-function hojaBalance(balance: BalanceComprobacion): (string | number)[][] {
-  const filas: (string | number)[][] = [
-    ["Código", "Cuenta", "Debe", "Haber", "Saldo Deudor", "Saldo Acreedor"],
-  ];
-  for (const f of balance.filas) {
-    filas.push([f.codigo ?? "", f.nombre, f.debe, f.haber, f.saldoDeudor, f.saldoAcreedor]);
+const FUENTE_EMPRESA: Partial<ExcelJS.Font> = { bold: true, size: 14 };
+const FUENTE_TITULO_HOJA: Partial<ExcelJS.Font> = { bold: true, size: 11 };
+const FUENTE_NEGRITA: Partial<ExcelJS.Font> = { bold: true };
+
+// Fila "Nombre de la empresa" + fila "Título del reporte", ambas en negrita y
+// combinadas a lo ancho de la tabla, seguidas de una fila en blanco.
+function agregarEncabezado(sheet: ExcelJS.Worksheet, nombreEmpresa: string, tituloReporte: string, columnas: number) {
+  sheet.mergeCells(1, 1, 1, columnas);
+  const filaEmpresa = sheet.getCell(1, 1);
+  filaEmpresa.value = nombreEmpresa;
+  filaEmpresa.font = FUENTE_EMPRESA;
+
+  sheet.mergeCells(2, 1, 2, columnas);
+  const filaTitulo = sheet.getCell(2, 1);
+  filaTitulo.value = tituloReporte;
+  filaTitulo.font = FUENTE_TITULO_HOJA;
+
+  sheet.addRow([]);
+}
+
+function agregarFila(
+  sheet: ExcelJS.Worksheet,
+  valores: (string | number)[],
+  opciones: { negrita?: boolean; detalle?: boolean } = {}
+) {
+  const fila = sheet.addRow(valores);
+  if (opciones.negrita) fila.font = FUENTE_NEGRITA;
+  if (opciones.detalle) {
+    fila.outlineLevel = 1;
+    fila.hidden = true;
   }
-  filas.push([
-    "",
-    "Totales",
-    balance.totalDebe,
-    balance.totalHaber,
-    balance.totalSaldoDeudor,
-    balance.totalSaldoAcreedor,
-  ]);
-  return filas;
+  return fila;
 }
 
-interface HojaConDetalle {
-  filas: (string | number)[][];
-  // Índices (0-based, incluyendo el encabezado) de las filas de detalle que deben
-  // quedar agrupadas y colapsadas por defecto bajo su subtotal, usando la función
-  // "Agrupar y esquematizar" de Excel.
-  filasDetalle: number[];
+function hojaBalance(sheet: ExcelJS.Worksheet, nombreEmpresa: string, nombreCierre: string, balance: BalanceComprobacion) {
+  agregarEncabezado(sheet, nombreEmpresa, `Balance de Comprobación · ${nombreCierre}`, 6);
+
+  agregarFila(sheet, ["Código", "Cuenta", "Debe", "Haber", "Saldo Deudor", "Saldo Acreedor"], { negrita: true });
+  for (const f of balance.filas) {
+    agregarFila(sheet, [f.codigo ?? "", f.nombre, f.debe, f.haber, f.saldoDeudor, f.saldoAcreedor]);
+  }
+  agregarFila(
+    sheet,
+    ["", "Totales", balance.totalDebe, balance.totalHaber, balance.totalSaldoDeudor, balance.totalSaldoAcreedor],
+    { negrita: true }
+  );
 }
 
-function hojaEstadoResultados(estado: EstadoResultados): HojaConDetalle {
-  const encabezado = ["Estado de Resultados", ...estado.meses.map((m) => NOMBRES_MESES[m - 1]), "Acumulado"];
-  const filas: (string | number)[][] = [encabezado];
-  const filasDetalle: number[] = [];
+function hojaEstadoResultados(sheet: ExcelJS.Worksheet, nombreEmpresa: string, nombreCierre: string, estado: EstadoResultados) {
+  const columnas = 1 + estado.meses.length + 1;
+  agregarEncabezado(sheet, nombreEmpresa, `Estado de Resultados · ${nombreCierre}`, columnas);
+
+  agregarFila(sheet, ["Estado de Resultados", ...estado.meses.map((m) => NOMBRES_MESES[m - 1]), "Acumulado"], {
+    negrita: true,
+  });
 
   const agregarSeccion = (seccion: EstadoResultados["secciones"][number]) => {
     if (seccion.lineas.length === 0) return;
-    filas.push([seccion.label, ...seccion.montosPorMes, seccion.total]);
+    agregarFila(sheet, [seccion.label, ...seccion.montosPorMes, seccion.total], { negrita: true });
     for (const linea of seccion.lineas) {
-      filas.push([`  ${linea.nombre}`, ...linea.montosPorMes, linea.total]);
-      filasDetalle.push(filas.length - 1);
+      agregarFila(sheet, [`  ${linea.nombre}`, ...linea.montosPorMes, linea.total], { detalle: true });
     }
   };
 
@@ -46,86 +70,68 @@ function hojaEstadoResultados(estado: EstadoResultados): HojaConDetalle {
 
   agregarSeccion(ingresos);
   agregarSeccion(costoVentas);
-  filas.push(["MARGEN BRUTO", ...estado.margenBruto.montosPorMes, estado.margenBruto.total]);
+  agregarFila(sheet, ["MARGEN BRUTO", ...estado.margenBruto.montosPorMes, estado.margenBruto.total], {
+    negrita: true,
+  });
   agregarSeccion(gastosAdmin);
-  filas.push(["EBITDA", ...estado.ebitda.montosPorMes, estado.ebitda.total]);
+  agregarFila(sheet, ["EBITDA", ...estado.ebitda.montosPorMes, estado.ebitda.total], { negrita: true });
   agregarSeccion(costosFinancieros);
   agregarSeccion(otrasGanancias);
   agregarSeccion(impuesto);
-  filas.push([
-    "RESULTADO ANTES DE IMPUESTOS",
-    ...estado.resultadoAntesImpuestos.montosPorMes,
-    estado.resultadoAntesImpuestos.total,
-  ]);
+  agregarFila(
+    sheet,
+    ["RESULTADO ANTES DE IMPUESTOS", ...estado.resultadoAntesImpuestos.montosPorMes, estado.resultadoAntesImpuestos.total],
+    { negrita: true }
+  );
 
-  return { filas, filasDetalle };
+  sheet.properties.outlineProperties = { summaryBelow: false, summaryRight: false };
 }
 
-function hojaEFF(eff: EstadoSituacionFinanciera): HojaConDetalle {
-  const filas: (string | number)[][] = [["Estado de Situación Financiera Clasificado", "Monto"]];
-  const filasDetalle: number[] = [];
+function hojaEFF(sheet: ExcelJS.Worksheet, nombreEmpresa: string, nombreCierre: string, eff: EstadoSituacionFinanciera) {
+  agregarEncabezado(sheet, nombreEmpresa, `Estado de Situación Financiera Clasificado · ${nombreCierre}`, 2);
+
+  agregarFila(sheet, ["Estado de Situación Financiera Clasificado", "Monto"], { negrita: true });
 
   const agregarGrupo = (grupo: GrupoEFF) => {
     if (grupo.categorias.length === 0) return;
-    filas.push([grupo.label, grupo.total]);
+    agregarFila(sheet, [grupo.label, grupo.total], { negrita: true });
     for (const categoria of grupo.categorias) {
-      filas.push([`  ${categoria.label}`, categoria.total]);
+      agregarFila(sheet, [`  ${categoria.label}`, categoria.total], { negrita: true });
       for (const linea of categoria.lineas) {
-        filas.push([`    ${linea.nombre}`, linea.monto]);
-        filasDetalle.push(filas.length - 1);
+        agregarFila(sheet, [`    ${linea.nombre}`, linea.monto], { detalle: true });
       }
     }
   };
 
-  filas.push(["ACTIVOS", ""]);
+  agregarFila(sheet, ["ACTIVOS", ""], { negrita: true });
   agregarGrupo(eff.activoCorriente);
   agregarGrupo(eff.activoNoCorriente);
-  filas.push(["TOTAL ACTIVOS", eff.totalActivos]);
-  filas.push(["", ""]);
-  filas.push(["PATRIMONIO Y PASIVOS", ""]);
+  agregarFila(sheet, ["TOTAL ACTIVOS", eff.totalActivos], { negrita: true });
+  agregarFila(sheet, ["", ""]);
+  agregarFila(sheet, ["PATRIMONIO Y PASIVOS", ""], { negrita: true });
   agregarGrupo(eff.pasivoCorriente);
   agregarGrupo(eff.pasivoNoCorriente);
   agregarGrupo(eff.patrimonio);
-  filas.push(["TOTAL PATRIMONIO Y PASIVOS", eff.totalPatrimonioYPasivos]);
+  agregarFila(sheet, ["TOTAL PATRIMONIO Y PASIVOS", eff.totalPatrimonioYPasivos], { negrita: true });
 
-  return { filas, filasDetalle };
+  sheet.properties.outlineProperties = { summaryBelow: false, summaryRight: false };
 }
 
-// Agrupa (y colapsa por defecto) las filas de detalle indicadas, usando la función
-// "Agrupar y esquematizar" de Excel — el subtotal queda siempre visible y las
-// cuentas debajo se ocultan hasta que el usuario apreta el "+".
-function aplicarAgrupacion(ws: XLSX.WorkSheet, filasDetalle: number[]) {
-  if (filasDetalle.length === 0) return;
-  ws["!outline"] = { above: true };
-  const filas: XLSX.RowInfo[] = ws["!rows"] ?? [];
-  for (const indice of filasDetalle) {
-    filas[indice] = { ...filas[indice], level: 1, hidden: true };
-  }
-  ws["!rows"] = filas;
-}
-
-export function generarExcelCierre(
+export async function generarExcelCierre(
+  nombreEmpresa: string,
   nombreCierre: string,
   balance: BalanceComprobacion,
   estado: EstadoResultados,
   eff: EstadoSituacionFinanciera
-): Buffer {
-  const workbook = XLSX.utils.book_new();
+): Promise<Buffer> {
+  const workbook = new ExcelJS.Workbook();
 
-  const datosER = hojaEstadoResultados(estado);
-  const hojaER = XLSX.utils.aoa_to_sheet(datosER.filas);
-  aplicarAgrupacion(hojaER, datosER.filasDetalle);
-  XLSX.utils.book_append_sheet(workbook, hojaER, "Estado de Resultados");
+  hojaEstadoResultados(workbook.addWorksheet("Estado de Resultados"), nombreEmpresa, nombreCierre, estado);
+  hojaEFF(workbook.addWorksheet("Estado Situacion Financiera"), nombreEmpresa, nombreCierre, eff);
+  hojaBalance(workbook.addWorksheet("Balance de Comprobacion"), nombreEmpresa, nombreCierre, balance);
 
-  const datosEFF = hojaEFF(eff);
-  const hojaEFFSheet = XLSX.utils.aoa_to_sheet(datosEFF.filas);
-  aplicarAgrupacion(hojaEFFSheet, datosEFF.filasDetalle);
-  XLSX.utils.book_append_sheet(workbook, hojaEFFSheet, "Estado Situacion Financiera");
-
-  const hojaBC = XLSX.utils.aoa_to_sheet(hojaBalance(balance));
-  XLSX.utils.book_append_sheet(workbook, hojaBC, "Balance de Comprobacion");
-
-  return XLSX.write(workbook, { type: "buffer", bookType: "xlsx" }) as Buffer;
+  const buffer = await workbook.xlsx.writeBuffer();
+  return Buffer.from(buffer);
 }
 
 export function nombreArchivo(nombreCierre: string, extension: string) {

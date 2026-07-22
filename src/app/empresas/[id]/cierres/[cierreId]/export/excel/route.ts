@@ -24,13 +24,16 @@ export async function GET(
   const cierre = await prisma.cierre.findUnique({ where: { id: cierreId } });
   if (!cierre || cierre.empresaId !== empresaId) notFound();
 
+  const empresa = await prisma.empresa.findUnique({ where: { id: empresaId } });
+  if (!empresa) notFound();
+
   const [balance, estado, eff] = await Promise.all([
     obtenerBalanceComprobacion(cierreId),
     obtenerEstadoResultados(cierreId),
     obtenerEstadoSituacionFinanciera(cierreId),
   ]);
 
-  const buffer = generarExcelCierre(cierre.nombre, balance, estado, eff);
+  const buffer = await generarExcelCierre(empresa.nombre, cierre.nombre, balance, estado, eff);
 
   return new NextResponse(new Uint8Array(buffer), {
     headers: {
