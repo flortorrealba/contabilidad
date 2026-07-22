@@ -28,7 +28,16 @@ function agregarFila(
   opciones: { negrita?: boolean; detalle?: boolean } = {}
 ) {
   const fila = sheet.addRow(valores);
-  if (opciones.negrita) fila.font = FUENTE_NEGRITA;
+  if (opciones.negrita) {
+    // Ojo: usar `fila.font = ...` (estilo a nivel de fila) marca la fila entera como
+    // "customFormat", lo que hace que Excel intente aplicar el estilo a las 16.384
+    // columnas de la fila en vez de solo a las celdas con datos — con suficientes
+    // filas así, Excel se queda sin recursos al abrir el archivo ("Recursos
+    // insuficientes para presentar todo"). Por eso se aplica celda por celda.
+    for (let columna = 1; columna <= valores.length; columna++) {
+      fila.getCell(columna).font = FUENTE_NEGRITA;
+    }
+  }
   if (opciones.detalle) {
     fila.outlineLevel = 1;
     fila.hidden = true;
