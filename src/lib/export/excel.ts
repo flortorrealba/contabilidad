@@ -20,15 +20,25 @@ function hojaBalance(balance: BalanceComprobacion): (string | number)[][] {
   return filas;
 }
 
-function hojaEstadoResultados(estado: EstadoResultados): (string | number)[][] {
+interface HojaConDetalle {
+  filas: (string | number)[][];
+  // Índices (0-based, incluyendo el encabezado) de las filas de detalle que deben
+  // quedar agrupadas y colapsadas por defecto bajo su subtotal, usando la función
+  // "Agrupar y esquematizar" de Excel.
+  filasDetalle: number[];
+}
+
+function hojaEstadoResultados(estado: EstadoResultados): HojaConDetalle {
   const encabezado = ["Estado de Resultados", ...estado.meses.map((m) => NOMBRES_MESES[m - 1]), "Acumulado"];
   const filas: (string | number)[][] = [encabezado];
+  const filasDetalle: number[] = [];
 
   const agregarSeccion = (seccion: EstadoResultados["secciones"][number]) => {
     if (seccion.lineas.length === 0) return;
     filas.push([seccion.label, ...seccion.montosPorMes, seccion.total]);
     for (const linea of seccion.lineas) {
       filas.push([`  ${linea.nombre}`, ...linea.montosPorMes, linea.total]);
+      filasDetalle.push(filas.length - 1);
     }
   };
 
@@ -48,11 +58,12 @@ function hojaEstadoResultados(estado: EstadoResultados): (string | number)[][] {
     estado.resultadoAntesImpuestos.total,
   ]);
 
-  return filas;
+  return { filas, filasDetalle };
 }
 
-function hojaEFF(eff: EstadoSituacionFinanciera): (string | number)[][] {
+function hojaEFF(eff: EstadoSituacionFinanciera): HojaConDetalle {
   const filas: (string | number)[][] = [["Estado de Situación Financiera Clasificado", "Monto"]];
+  const filasDetalle: number[] = [];
 
   const agregarGrupo = (grupo: GrupoEFF) => {
     if (grupo.categorias.length === 0) return;
@@ -61,6 +72,7 @@ function hojaEFF(eff: EstadoSituacionFinanciera): (string | number)[][] {
       filas.push([`  ${categoria.label}`, categoria.total]);
       for (const linea of categoria.lineas) {
         filas.push([`    ${linea.nombre}`, linea.monto]);
+        filasDetalle.push(filas.length - 1);
       }
     }
   };
@@ -76,7 +88,20 @@ function hojaEFF(eff: EstadoSituacionFinanciera): (string | number)[][] {
   agregarGrupo(eff.patrimonio);
   filas.push(["TOTAL PATRIMONIO Y PASIVOS", eff.totalPatrimonioYPasivos]);
 
-  return filas;
+  return { filas, filasDetalle };
+}
+
+// Agrupa (y colapsa por defecto) las filas de detalle indicadas, usando la función
+// "Agrupar y esquematizar" de Excel — el subtotal queda siempre visible y las
+// cuentas debajo se ocultan hasta que el usuario apreta el "+".
+function aplicarAgrupacion(ws: XLSX.WorkSheet, filasDetalle: number[]) {
+  if (filasDetalle.length === 0) return;
+  ws["!outline"] = { above: true };
+  const filas: XLSX.RowInfo[] = ws["!rows"] ?? [];
+  for (const indice of filasDetalle) {
+    filas[indice] = { ...filas[indice], level: 1, hidden: true };
+  }
+  ws["!rows"] = filas;
 }
 
 export function generarExcelCierre(
@@ -87,10 +112,14 @@ export function generarExcelCierre(
 ): Buffer {
   const workbook = XLSX.utils.book_new();
 
-  const hojaER = XLSX.utils.aoa_to_sheet(hojaEstadoResultados(estado));
+  const datosER = hojaEstadoResultados(estado);
+  const hojaER = XLSX.utils.aoa_to_sheet(datosER.filas);
+  aplicarAgrupacion(hojaER, datosER.filasDetalle);
   XLSX.utils.book_append_sheet(workbook, hojaER, "Estado de Resultados");
 
-  const hojaEFFSheet = XLSX.utils.aoa_to_sheet(hojaEFF(eff));
+  const datosEFF = hojaEFF(eff);
+  const hojaEFFSheet = XLSX.utils.aoa_to_sheet(datosEFF.filas);
+  aplicarAgrupacion(hojaEFFSheet, datosEFF.filasDetalle);
   XLSX.utils.book_append_sheet(workbook, hojaEFFSheet, "Estado Situacion Financiera");
 
   const hojaBC = XLSX.utils.aoa_to_sheet(hojaBalance(balance));
